@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace backend.Entities.Travel
+namespace backend.Entities.Travels
 {
     [Table("expense_proofs")]
     public class ExpenseProof

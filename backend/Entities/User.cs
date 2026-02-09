@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using backend.Entities.Travels;
 namespace backend.Entities
 {
     [Table("users")]
@@ -19,6 +19,11 @@ namespace backend.Entities
         [MaxLength(255)]
         [Column("password")]
         public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [MaxLength(255)]
+        [Column("password_salt")]
+        public string PasswordSalt {get; set;} = string.Empty;
 
         [Required]
         [MaxLength(255)]
@@ -52,8 +57,8 @@ namespace backend.Entities
         public int? ManagerId { get; set; }
 
         [Required]
-        [Column("role")]
-        public UserRole Role { get; set; }
+        [Column("fk_role_id")]
+        public int? RoleId { get; set; }
 
         [Column("is_active")]
         public bool IsActive { get; set; } = true;
@@ -73,15 +78,24 @@ namespace backend.Entities
         [ForeignKey("ManagerId")]
         public virtual User? Manager { get; set; }
 
+        [ForeignKey("RoleId")]
+        public virtual Role? Role { get; set; }
 
+    
+    public ICollection<User> DirectReports { get; set; } = new List<User>();
+
+    public ICollection<Travel> TravelsCreated { get; set; } = new List<Travel>();
+
+    public ICollection<TravelAssignment> TravelAssignments { get; set; } = new List<TravelAssignment>();
+
+    public ICollection<TravelDocument> TravelDocumentsUploaded { get; set; } = new List<TravelDocument>();
+
+    public ICollection<Expense> ExpensesReviewed { get; set; } = new List<Expense>();
+
+    public ICollection<UserRefreshToken> RefreshTokens { get; set; } = new List<UserRefreshToken>();
     }
 
-    public enum UserRole
-    {
-        Employee,
-        Manager,
-        HR
-    }
+ 
 }
 
  

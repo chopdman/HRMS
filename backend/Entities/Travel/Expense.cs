@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace backend.Entities.Travel
+namespace backend.Entities.Travels
 {
     [Table("expenses")]
     public class Expense
@@ -65,6 +65,8 @@ namespace backend.Entities.Travel
 
         [ForeignKey("ReviewedBy")]
         public virtual User? Reviewer { get; set; }
+
+        public ICollection<ExpenseProof> ProofDocuments { get; set; } = new List<ExpenseProof>();
 
     }
 

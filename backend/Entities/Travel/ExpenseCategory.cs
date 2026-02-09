@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace backend.Entities.Travel
+namespace backend.Entities.Travels
 {
     [Table("expense_categories")]
     public class ExpenseCategory
@@ -21,7 +21,8 @@ namespace backend.Entities.Travel
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-       
+
+        public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
     }
 
 }
