@@ -1,0 +1,35 @@
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace backend.Entities.Games
+{
+
+    [Table("user_game_interests")]
+    public class UserGameInterest
+    {
+        [Key]
+        [Column("pk_interest_id")]
+        public int InterestId { get; set; }
+
+        [Required]
+        [Column("fk_user_id")]
+        public int UserId { get; set; }
+
+        [Required]
+        [Column("fk_game_id")]
+        public int GameId { get; set; }
+
+        [Column("is_interested")]
+        public bool IsInterested { get; set; } = true;
+
+        [Column("registered_at")]
+        public DateTime RegisteredAt { get; set; } = DateTime.UtcNow;
+
+        [ForeignKey("UserId")]
+        public virtual User? User { get; set; }
+
+        [ForeignKey("GameId")]
+        public virtual Game? Game { get; set; }
+    }
+
+}
