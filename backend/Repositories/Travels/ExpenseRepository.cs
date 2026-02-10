@@ -20,7 +20,7 @@ public class ExpenseRepository : IExpenseRepository
         return expense;
     }
 
-    public async Task<Expense?> GetByIdAsync(int expenseId)
+    public async Task<Expense?> GetByIdAsync(long expenseId)
     {
         return await _db.Expenses
             // .Include(e => e.Assignment)
@@ -28,7 +28,7 @@ public class ExpenseRepository : IExpenseRepository
             .FirstOrDefaultAsync(e => e.ExpenseId == expenseId);
     }
 
-    public async Task<IReadOnlyCollection<Expense>> GetByAssigneeAsync(int employeeId)
+    public async Task<IReadOnlyCollection<Expense>> GetByAssigneeAsync(long employeeId)
     {
         return await _db.Expenses
             // .Include(e => e.Assignment)
@@ -37,7 +37,7 @@ public class ExpenseRepository : IExpenseRepository
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<Expense>> GetFilteredAsync(int? employeeId, int? travelId, DateTime? from, DateTime? to, string? status)
+    public async Task<IReadOnlyCollection<Expense>> GetFilteredAsync(long? employeeId, long? travelId, DateTime? from, DateTime? to, string? status)
     {
         var query = _db.Expenses
             // .Include(e => e.Assignment)

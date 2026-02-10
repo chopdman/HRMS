@@ -10,19 +10,19 @@ namespace backend.Entities.Travels
     {
         [Key]
         [Column("pk_document_id")]
-        public int DocumentId { get; set; }
+        public long DocumentId { get; set; }
 
         [Required]
         [Column("fk_travel_id")]
-        public int TravelId { get; set; }
+        public long TravelId { get; set; }
 
         [Required]
         [Column("fk_employee_id")]
-        public int EmployeeId { get; set; }
+        public long EmployeeId { get; set; }
 
         [Required]
         [Column("fk_uploaded_by")]
-        public int UploadedBy { get; set; }
+        public long UploadedBy { get; set; }
 
         [Required]
         [Column("owner_type")]

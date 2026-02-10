@@ -8,7 +8,7 @@ namespace backend.Entities.Common
     {
 
         [Key]
-        public int RoleId { get; set; }
+        public long RoleId { get; set; }
 
         [Required, MaxLength(100)]
         public string Name { get; set; } = string.Empty;

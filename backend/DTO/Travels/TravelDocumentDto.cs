@@ -7,10 +7,10 @@ public class TravelDocumentUploadDto
 {
 
     [Required]
-    public int TravelId { get; set; }
+    public long TravelId { get; set; }
 
     [Required]
-    public int? EmployeeId { get; set; }
+    public long? EmployeeId { get; set; }
 
     [Required, MaxLength(200)]
     public string DocumentType { get; set; } = string.Empty;
@@ -20,10 +20,10 @@ public class TravelDocumentUploadDto
 }
 
 public record TravelDocumentDto(
-    int DocumentId,
-    int TravelId,
-    int EmployeeId,
-    int UploadedById,
+    long DocumentId,
+    long TravelId,
+    long EmployeeId,
+    long UploadedById,
     DocumentOwnerType OwnerType,
     string? DocumentType,
     string? FileName,

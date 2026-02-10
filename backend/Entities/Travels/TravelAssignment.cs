@@ -9,15 +9,15 @@ namespace backend.Entities.Travels
     {
         [Key]
         [Column("pk_assignment_id")]
-        public int AssignmentId { get; set; }
+        public long AssignmentId { get; set; }
 
         [Required]
         [Column("fk_travel_id")]
-        public int TravelId { get; set; }
+        public long TravelId { get; set; }
 
         [Required]
         [Column("fk_employee_id")]
-        public int EmployeeId { get; set; }
+        public long EmployeeId { get; set; }
 
 
         [Column("assigned_at")]

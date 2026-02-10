@@ -8,11 +8,11 @@ namespace backend.Entities.Travels
     {
         [Key]
         [Column("pk_proof_id")]
-        public int ProofId { get; set; }
+        public long ProofId { get; set; }
 
         [Required]
         [Column("fk_expense_id")]
-        public int ExpenseId { get; set; }
+        public long ExpenseId { get; set; }
 
         [Required]
         [MaxLength(255)]

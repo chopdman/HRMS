@@ -9,7 +9,7 @@ namespace backend.Entities.Achievements
     {
         [Key]
         [Column("pk_log_id")]
-        public int LogId { get; set; }
+        public long LogId { get; set; }
 
         [Required]
         [Column("content_type")]
@@ -17,15 +17,15 @@ namespace backend.Entities.Achievements
 
         [Required]
         [Column("fk_content_id")]
-        public int ContentId { get; set; }
+        public long ContentId { get; set; }
 
         [Required]
         [Column("fk_deleted_by")]
-        public int DeletedBy { get; set; }
+        public long DeletedBy { get; set; }
 
         [Required]
         [Column("fk_author_id")]
-        public int AuthorId { get; set; }
+        public long AuthorId { get; set; }
 
         [Column("reason")]
         public string? Reason { get; set; }

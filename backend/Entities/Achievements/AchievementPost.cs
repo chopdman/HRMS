@@ -9,11 +9,11 @@ namespace backend.Entities.Achievements
     {
         [Key]
         [Column("pk_post_id")]
-        public int PostId { get; set; }
+        public long PostId { get; set; }
 
         [Required]
         [Column("fk_author_id")]
-        public int AuthorId { get; set; }
+        public long AuthorId { get; set; }
 
         [Required]
         [MaxLength(255)]

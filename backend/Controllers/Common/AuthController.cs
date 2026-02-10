@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace backend.Controllers.Common;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/v1/auth")]
 public class AuthController : ControllerBase
 {
     private readonly AppDbContext _db;
@@ -33,17 +33,25 @@ public class AuthController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
-
         var exists = await _db.Users.AnyAsync(u => u.Email == request.Email);
         if (exists)
         {
-            return Conflict(new { message = "Email already registered." });
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Status = 400,
+                Errors = new List<string> { "Email already registered." }
+            });
         }
 
         var role = await _db.Roles.FirstOrDefaultAsync(r => r.RoleId == request.RoleId);
         if (role is null)
         {
-            return BadRequest(new { message = "Role not found." });
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Message = "Role not found."
+            });
         }
 
         var (hash, salt) = _hasher.HashPassword(request.Password);
@@ -59,7 +67,17 @@ public class AuthController : ControllerBase
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
 
-        return Created($"/users/{user.UserId}", new { user.UserId, user.Email, user.FullName, role = role.Name });
+        var registerResponse = new RegisterResponse(user.UserId,
+         user.Email, user.FullName, role.Name);
+
+
+        return Created(string.Empty, new ApiResponse<RegisterResponse>
+        {
+            Success = true,
+            Message = "User is created successfully",
+            Data = registerResponse
+        });
+
     }
 
     [HttpPost("login")]
@@ -73,7 +91,11 @@ public class AuthController : ControllerBase
         var user = await _db.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Email == request.Email);
         if (user is null || !_hasher.Verify(request.Password, user.Password, user.PasswordSalt))
         {
-            return Unauthorized(new { message = "Invalid username or password" });
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Message = "Invalid username or password"
+            });
         }
 
         var (accessToken, accessExpires) = _tokenService.GenerateAccessToken(user);
@@ -144,12 +166,20 @@ public class AuthController : ControllerBase
         var stored = await _db.UserRefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == tokenHash);
         if (stored is null)
         {
-            return Ok();
+            return NotFound(new
+            {
+                Message = "Refresh token not found or already revoked.",
+                Token = tokenHash
+            });
         }
 
         stored.RevokedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
-        return Ok();
+        return Ok(new
+        {
+            Message = "Refresh token successfully revoked.",
+            RevokedAt = stored.RevokedAt
+        });
     }
 }

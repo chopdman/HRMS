@@ -9,19 +9,19 @@ namespace backend.Entities.Travels
     {
         [Key]
         [Column("pk_expense_id")]
-        public int ExpenseId { get; set; }
+        public long ExpenseId { get; set; }
 
         [Required]
         [Column("fk_travel_id")]
-        public int TravelId { get; set; }
+        public long TravelId { get; set; }
 
         [Required]
         [Column("fk_employee_id")]
-        public int EmployeeId { get; set; }
+        public long EmployeeId { get; set; }
 
         [Required]
         [Column("fk_category_id")]
-        public int CategoryId { get; set; }
+        public long CategoryId { get; set; }
 
         [Required]
         [Column("amount", TypeName = "decimal(10,2)")]
@@ -45,7 +45,7 @@ namespace backend.Entities.Travels
         public DateTime? SubmittedAt { get; set; }
 
         [Column("reviewed_by")]
-        public int? ReviewedBy { get; set; }
+        public long? ReviewedBy { get; set; }
 
         [Column("reviewed_at")]
         public DateTime? ReviewedAt { get; set; }

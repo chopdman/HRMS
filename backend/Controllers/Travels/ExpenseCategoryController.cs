@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.Controllers.Travels;
 
 [ApiController]
-[Route("api/expense-config")]
+[Route("api/v1/expense-config")]
 public class ExpenseCategoryController : ControllerBase
 {
     private readonly ExpenseCategoryService _service;

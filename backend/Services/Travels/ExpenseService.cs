@@ -30,7 +30,7 @@ public class ExpenseService
         _emailSettings = emailSettings;
     }
 
-    public async Task<ExpenseResponseDto> CreateDraftAsync(ExpenseCreateDto dto, int currentUserId)
+    public async Task<ExpenseResponseDto> CreateDraftAsync(ExpenseCreateDto dto, long currentUserId)
     {
         var assignment = await _db.TravelAssignments
             .Include(a => a.Travel)
@@ -63,7 +63,7 @@ public class ExpenseService
         return Map(saved);
     }
 
-    public async Task UploadProofAsync(int expenseId, ExpenseProofUploadDto dto, int currentUserId)
+    public async Task UploadProofAsync(long expenseId, ExpenseProofUploadDto dto, long currentUserId)
     {
         var expense = await _expenses.GetByIdAsync(expenseId);
         if (expense is null)
@@ -92,7 +92,7 @@ public class ExpenseService
         await _documents.AddAsync(document);
     }
 
-    public async Task<ExpenseResponseDto> SubmitAsync(int expenseId, int currentUserId)
+    public async Task<ExpenseResponseDto> SubmitAsync(long expenseId, long currentUserId)
     {
         var expense = await _expenses.GetByIdAsync(expenseId);
         if (expense is null)
@@ -151,7 +151,7 @@ public class ExpenseService
         return Map(expense);
     }
 
-    public async Task<ExpenseResponseDto> ReviewAsync(int expenseId, ExpenseReviewDto dto, int reviewerId)
+    public async Task<ExpenseResponseDto> ReviewAsync(long expenseId, ExpenseReviewDto dto, long reviewerId)
     {
         if (dto.Status is not (ExpenseStatus.Approved or ExpenseStatus.Rejected))
         {
@@ -178,13 +178,13 @@ public class ExpenseService
         return Map(expense);
     }
 
-    public async Task<IReadOnlyCollection<ExpenseResponseDto>> ListForEmployeeAsync(int employeeId)
+    public async Task<IReadOnlyCollection<ExpenseResponseDto>> ListForEmployeeAsync(long employeeId)
     {
         var expenses = await _expenses.GetByAssigneeAsync(employeeId);
         return expenses.Select(Map).ToList();
     }
 
-    public async Task<IReadOnlyCollection<ExpenseResponseDto>> ListForHrAsync(int? employeeId, int? travelId, DateTime? from, DateTime? to, string? status)
+    public async Task<IReadOnlyCollection<ExpenseResponseDto>> ListForHrAsync(long? employeeId, long? travelId, DateTime? from, DateTime? to, string? status)
     {
         var expenses = await _expenses.GetFilteredAsync(employeeId, travelId, from, to, status);
         return expenses.Select(Map).ToList();
@@ -199,7 +199,7 @@ public class ExpenseService
         }
     }
 
-    private async Task ValidateAmountAsync(int categoryId, decimal amount)
+    private async Task ValidateAmountAsync(long categoryId, decimal amount)
     {
         var maxPerDay = await _db.ExpenseCategories
             .Where(c => c.CategoryId == categoryId)

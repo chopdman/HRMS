@@ -9,15 +9,15 @@ namespace backend.Entities.Games
     {
         [Key]
         [Column("pk_stat_id")]
-        public int StatId { get; set; }
+        public long StatId { get; set; }
 
         [Required]
         [Column("fk_user_id")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [Required]
         [Column("fk_game_id")]
-        public int GameId { get; set; }
+        public long GameId { get; set; }
 
         [Required]
         [Column("cycle_start_date")]

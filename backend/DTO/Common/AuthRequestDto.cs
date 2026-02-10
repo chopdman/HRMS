@@ -7,7 +7,14 @@ namespace backend.DTO.Common
         [Required, EmailAddress] string Email,
         [Required, MinLength(8)] string Password,
         [Required, MaxLength(200)] string FullName,
-        [Required] int RoleId
+        [Required] long RoleId
+    );
+
+    public record RegisterResponse(
+        [Required] long UserId,
+        [Required] string Email,
+        [Required] string FullName,
+        [Required] string Role
     );
 
     public record LoginRequest(

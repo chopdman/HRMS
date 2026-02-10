@@ -58,7 +58,7 @@ public class TravelService
         var title = "New travel assigned";
         var message = $"You have been assigned to travel '{created.TravelName}' ({created.Destination}) from {created.StartDate} to {created.EndDate}.";
 
-        await _notifications.CreateForUsersAsync(employees.Select(e => e.UserId), title, message);
+        // await _notifications.CreateForUsersAsync(employees.Select(e => e.UserId), title, message);
 
         // foreach (var employee in employees)
         // {
@@ -68,12 +68,12 @@ public class TravelService
         return created;
     }
 
-    public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(int employeeId)
+    public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId)
     {
         return await _repository.GetAssignedTravelsAsync(employeeId);
     }
 
-    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(int employeeId)
+    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId)
     {
         return await _repository.GetAssignmentsForEmployeeAsync(employeeId);
     }

@@ -8,7 +8,7 @@ namespace backend.Entities.Common
     {
         [Key]
         [Column("pk_user_id")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -54,11 +54,11 @@ namespace backend.Entities.Common
         public string? Designation { get; set; }
 
         [Column("fk_manager_id")]
-        public int? ManagerId { get; set; }
+        public long? ManagerId { get; set; }
 
         [Required]
         [Column("fk_role_id")]
-        public int? RoleId { get; set; }
+        public long? RoleId { get; set; }
 
         [Column("is_active")]
         public bool IsActive { get; set; } = true;

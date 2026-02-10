@@ -10,7 +10,7 @@ namespace backend.Entities.Travels
     {
         [Key]
         [Column("pk_travel_id")]
-        public int TravelId { get; set; }
+        public long TravelId { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -35,7 +35,7 @@ namespace backend.Entities.Travels
 
         [Required]
         [Column("fk_created_by")]
-        public int CreatedBy { get; set; }
+        public long CreatedBy { get; set; }
 
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

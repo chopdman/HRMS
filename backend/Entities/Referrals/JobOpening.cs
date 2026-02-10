@@ -9,7 +9,7 @@ namespace backend.Entities.Referrals
     {
         [Key]
         [Column("pk_job_id")]
-        public int JobId { get; set; }
+        public long JobId { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -49,7 +49,7 @@ namespace backend.Entities.Referrals
         public string? CvReviewerEmails { get; set; }
 
         [Column("fk_posted_by")]
-        public int? PostedBy { get; set; }
+        public long? PostedBy { get; set; }
 
         [Column("posted_at")]
         public DateTime PostedAt { get; set; } = DateTime.UtcNow;

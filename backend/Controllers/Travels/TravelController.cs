@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace backend.Controllers.Travels;
 
 [ApiController]
-[Route("api/travels")]
+[Route("api/v1/travels")]
 public class TravelController : ControllerBase
 {
     private readonly TravelService _service;
@@ -40,7 +40,7 @@ public class TravelController : ControllerBase
 
     [Authorize(Roles = "Employee,Manager,HR")]
     [HttpGet("assigned")]
-    public async Task<IActionResult> GetAssignedTravels([FromQuery] int? employeeId)
+    public async Task<IActionResult> GetAssignedTravels([FromQuery] long? employeeId)
     {
         var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
         var subValue = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
@@ -67,7 +67,7 @@ public class TravelController : ControllerBase
 
     [Authorize(Roles = "Employee,Manager,HR")]
     [HttpGet("assignments")]
-    public async Task<IActionResult> GetAssignments([FromQuery] int? employeeId)
+    public async Task<IActionResult> GetAssignments([FromQuery] long? employeeId)
     {
         var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
         var subValue = User.FindFirstValue(JwtRegisteredClaimNames.Sub);

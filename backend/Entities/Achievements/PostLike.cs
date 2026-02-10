@@ -10,15 +10,15 @@ namespace backend.Entities.Achievements
     {
         [Key]
         [Column("pk_like_id")]
-        public int LikeId { get; set; }
+        public long LikeId { get; set; }
 
         [Required]
         [Column("fk_post_id")]
-        public int PostId { get; set; }
+        public long PostId { get; set; }
 
         [Required]
         [Column("fk_user_id")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [Column("liked_at")]
         public DateTime LikedAt { get; set; } = DateTime.UtcNow;

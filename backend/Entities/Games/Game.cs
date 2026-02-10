@@ -8,7 +8,7 @@ namespace backend.Entities.Games
     {
         [Key]
         [Column("pk_game_id")]
-        public int GameId { get; set; }
+        public long GameId { get; set; }
 
         [Required]
         [MaxLength(100)]

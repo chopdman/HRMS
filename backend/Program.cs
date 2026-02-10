@@ -13,6 +13,7 @@ using System.Text;
 using backend.Repositories.Common;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Mvc;
 
 Env.Load();
 
@@ -26,19 +27,32 @@ if (string.IsNullOrEmpty(secretKey))
 }
 var dbUrl = Environment.GetEnvironmentVariable("DB_URL");
 
-if (!string.IsNullOrWhiteSpace(dbUrl) )
+if (!string.IsNullOrWhiteSpace(dbUrl))
 {
     builder.Configuration["ConnectionStrings:DefaultConnection"] = dbUrl;
 }
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    }).ConfigureApiBehaviorOptions(setupAction =>
+    {
+        setupAction.InvalidModelStateResponseFactory = context =>
+        {
+            var problemDetails = new ValidationProblemDetails(context.ModelState)
+            {
+                Title = "One or more model validation errors occurred.",
+                Status = StatusCodes.Status400BadRequest,
+            };
+            return new BadRequestObjectResult(problemDetails)
+            {
+                ContentTypes = { "application/problem+json" }
+            };
+        };
+    });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -59,9 +73,7 @@ builder.Services.AddScoped<IExpenseProofRepository, ExpenseProofRepository>();
 builder.Services.AddScoped<ExpenseService>();
 builder.Services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
 builder.Services.AddScoped<ExpenseCategoryService>();
-builder.Services.AddScoped<IRoleRepository,RoleRepository>();
-// builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
-// builder.Services.AddScoped<ManagerService>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<EmailService>();
@@ -81,8 +93,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
             ClockSkew = TimeSpan.FromMinutes(3)
         };
-    
-       options.Events = new JwtBearerEvents
+
+        options.Events = new JwtBearerEvents
         {
             OnAuthenticationFailed = context =>
             {
@@ -99,7 +111,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
 
-                var result = JsonSerializer.Serialize(new 
+                var result = JsonSerializer.Serialize(new
                 {
                     Message = "You are not authorized to access this resource. Please provide a valid token."
                 });

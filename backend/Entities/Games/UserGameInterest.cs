@@ -10,15 +10,15 @@ namespace backend.Entities.Games
     {
         [Key]
         [Column("pk_interest_id")]
-        public int InterestId { get; set; }
+        public long InterestId { get; set; }
 
         [Required]
         [Column("fk_user_id")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [Required]
         [Column("fk_game_id")]
-        public int GameId { get; set; }
+        public long GameId { get; set; }
 
         [Column("is_interested")]
         public bool IsInterested { get; set; } = true;

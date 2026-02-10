@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace backend.Controllers.Common;
 
 [ApiController]
-[Route("api/roles")]
+[Route("api/v1/roles")]
 public class RoleController : ControllerBase
 {
     private readonly RoleService _service;

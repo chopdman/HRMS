@@ -4,7 +4,7 @@ namespace backend.DTO.Travels
 {
 
     public record TravelAssignmentCreateDto(
-        [Required] int EmployeeId
+        [Required] long EmployeeId
     );
 
     public record TravelCreateDto(
@@ -13,23 +13,23 @@ namespace backend.DTO.Travels
         [MaxLength(2000)] string? Purpose,
         [Required] DateTime StartDate,
         [Required] DateTime EndDate,
-        [Required] int CreatedById,
+        [Required] long CreatedById,
         [MinLength(1)] List<TravelAssignmentCreateDto> Assignments
     );
 
     public record TravelResponseDto(
-        int TravelId,
+        long TravelId,
         string TravelName,
         string Destination,
         string? Purpose,
         DateTime StartDate,
         DateTime EndDate,
-        int CreatedById,
-        IReadOnlyCollection<int> AssignedEmployeeIds
+        long CreatedById,
+        IReadOnlyCollection<long> AssignedEmployeeIds
     );
 
     public record TravelAssignedDto(
-        int TravelId,
+        long TravelId,
         string TravelName,
         string Destination,
         DateTime StartDate,
@@ -37,8 +37,8 @@ namespace backend.DTO.Travels
     );
 
     public record TravelAssignmentDto(
-        int AssignId,
-        int TravelId,
+        long AssignId,
+        long TravelId,
         string TravelName,
         string Destination,
         DateTime StartDate,

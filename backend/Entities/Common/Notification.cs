@@ -9,11 +9,11 @@ public class Notification
 {
     [Key]
     [Column("pk_notification_id")]
-    public int NotificationId { get; set; }
+    public long NotificationId { get; set; }
 
     [Required]
     [Column("fk_user_id")]
-    public int UserId { get; set; }
+    public long UserId { get; set; }
 
     [Required, MaxLength(200)]
     public string Title { get; set; } = string.Empty;

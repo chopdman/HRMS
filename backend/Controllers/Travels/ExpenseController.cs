@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace backend.Controllers.Travels;
 
 [ApiController]
-[Route("api/expenses")]
+[Route("api/v1/expenses")]
 public class ExpenseController : ControllerBase
 {
     private readonly ExpenseService _service;
@@ -47,7 +47,7 @@ public class ExpenseController : ControllerBase
     [Authorize(Roles = "Employee")]
     [HttpPost("{expenseId:int}/proofs")]
     [RequestSizeLimit(20_000_000)]
-    public async Task<IActionResult> UploadProof(int expenseId, [FromForm] ExpenseProofUploadDto dto)
+    public async Task<IActionResult> UploadProof(long expenseId, [FromForm] ExpenseProofUploadDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -73,7 +73,7 @@ public class ExpenseController : ControllerBase
 
     [Authorize(Roles = "Employee")]
     [HttpPost("{expenseId:int}/submit")]
-    public async Task<IActionResult> Submit(int expenseId)
+    public async Task<IActionResult> Submit(long expenseId)
     {
         var userId = GetUserId();
         if (userId is null)
@@ -94,7 +94,7 @@ public class ExpenseController : ControllerBase
 
     [Authorize(Roles = "HR")]
     [HttpPost("{expenseId:int}/review")]
-    public async Task<IActionResult> Review(int expenseId, [FromBody] ExpenseReviewDto dto)
+    public async Task<IActionResult> Review(long expenseId, [FromBody] ExpenseReviewDto dto)
     {
         if (!ModelState.IsValid)
         {
@@ -134,13 +134,13 @@ public class ExpenseController : ControllerBase
 
     [Authorize(Roles = "HR")]
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] int? employeeId, [FromQuery] int? travelId, [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? status)
+    public async Task<IActionResult> List([FromQuery] long? employeeId, [FromQuery] long? travelId, [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? status)
     {
         var result = await _service.ListForHrAsync(employeeId, travelId, from, to, status);
         return Ok(result);
     }
 
-    private int? GetUserId()
+    private long? GetUserId()
     {
         var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
         if (int.TryParse(sub, out var userId))

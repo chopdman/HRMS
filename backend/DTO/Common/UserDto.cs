@@ -1,12 +1,12 @@
 namespace backend.DTO.Common;
 
 public record EmployeeLookupDto(
-    int Id,
+    long Id,
     string FullName,
     string Email
 );
 public record UserResponseDto(
-    int Id,
+    long Id,
     string FullName,
     string Email,
     string Phone,

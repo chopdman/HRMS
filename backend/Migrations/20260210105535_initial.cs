@@ -15,7 +15,7 @@ namespace backend.Migrations
                 name: "expense_categories",
                 columns: table => new
                 {
-                    pk_category_id = table.Column<int>(type: "int", nullable: false)
+                    pk_category_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     category_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     max_amount_per_day = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
@@ -30,7 +30,7 @@ namespace backend.Migrations
                 name: "roles",
                 columns: table => new
                 {
-                    RoleId = table.Column<int>(type: "int", nullable: false)
+                    RoleId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true)
@@ -44,7 +44,7 @@ namespace backend.Migrations
                 name: "users",
                 columns: table => new
                 {
-                    pk_user_id = table.Column<int>(type: "int", nullable: false)
+                    pk_user_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     password = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
@@ -56,8 +56,8 @@ namespace backend.Migrations
                     profile_photo_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     department = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     designation = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    fk_manager_id = table.Column<int>(type: "int", nullable: true),
-                    fk_role_id = table.Column<int>(type: "int", nullable: false),
+                    fk_manager_id = table.Column<long>(type: "bigint", nullable: true),
+                    fk_role_id = table.Column<long>(type: "bigint", nullable: false),
                     is_active = table.Column<bool>(type: "bit", nullable: false),
                     hash_refresh_token = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     refresh_token_expiry = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -85,14 +85,14 @@ namespace backend.Migrations
                 name: "travels",
                 columns: table => new
                 {
-                    pk_travel_id = table.Column<int>(type: "int", nullable: false)
+                    pk_travel_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     travel_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     destination = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     purpose = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     start_date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     end_date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    fk_created_by = table.Column<int>(type: "int", nullable: false),
+                    fk_created_by = table.Column<long>(type: "bigint", nullable: false),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     updated_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -111,9 +111,9 @@ namespace backend.Migrations
                 name: "user_refresh_tokens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
+                    Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
                     TokenHash = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -136,18 +136,18 @@ namespace backend.Migrations
                 name: "expenses",
                 columns: table => new
                 {
-                    pk_expense_id = table.Column<int>(type: "int", nullable: false)
+                    pk_expense_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    fk_travel_id = table.Column<int>(type: "int", nullable: false),
-                    fk_employee_id = table.Column<int>(type: "int", nullable: false),
-                    fk_category_id = table.Column<int>(type: "int", nullable: false),
+                    fk_travel_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_employee_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_category_id = table.Column<long>(type: "bigint", nullable: false),
                     amount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     currency = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     expense_date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     status = table.Column<int>(type: "int", nullable: false),
                     submitted_at = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    reviewed_by = table.Column<int>(type: "int", nullable: true),
+                    reviewed_by = table.Column<long>(type: "bigint", nullable: true),
                     reviewed_at = table.Column<DateTime>(type: "datetime2", nullable: true),
                     hr_remarks = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -186,10 +186,10 @@ namespace backend.Migrations
                 name: "travel_assignments",
                 columns: table => new
                 {
-                    pk_assignment_id = table.Column<int>(type: "int", nullable: false)
+                    pk_assignment_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    fk_travel_id = table.Column<int>(type: "int", nullable: false),
-                    fk_employee_id = table.Column<int>(type: "int", nullable: false),
+                    fk_travel_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_employee_id = table.Column<long>(type: "bigint", nullable: false),
                     assigned_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -213,11 +213,11 @@ namespace backend.Migrations
                 name: "travel_documents",
                 columns: table => new
                 {
-                    pk_document_id = table.Column<int>(type: "int", nullable: false)
+                    pk_document_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    fk_travel_id = table.Column<int>(type: "int", nullable: false),
-                    fk_employee_id = table.Column<int>(type: "int", nullable: false),
-                    fk_uploaded_by = table.Column<int>(type: "int", nullable: false),
+                    fk_travel_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_employee_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_uploaded_by = table.Column<long>(type: "bigint", nullable: false),
                     owner_type = table.Column<int>(type: "int", nullable: false),
                     document_type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     file_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
@@ -251,9 +251,9 @@ namespace backend.Migrations
                 name: "expense_proofs",
                 columns: table => new
                 {
-                    pk_proof_id = table.Column<int>(type: "int", nullable: false)
+                    pk_proof_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    fk_expense_id = table.Column<int>(type: "int", nullable: false),
+                    fk_expense_id = table.Column<long>(type: "bigint", nullable: false),
                     file_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     file_path = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     file_type = table.Column<int>(type: "int", maxLength: 50, nullable: true),

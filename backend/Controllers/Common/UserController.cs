@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers.Common;
 
 [ApiController]
-[Route("api/users")]
+[Route("api/v1/users")]
 public class UsersController : ControllerBase
 {
     private readonly AppDbContext _db;
@@ -24,13 +24,13 @@ public class UsersController : ControllerBase
         var results = _db.Users
      .Join(
          _db.Roles,
-         u => EF.Property<int?>(u, "RoleId"),
-         r => EF.Property<int?>(r, "RoleId"),
+         u => EF.Property<long?>(u, "RoleId"),
+         r => EF.Property<long?>(r, "RoleId"),
          (o, i) => new { User = o, Role = i }
      ).Join(
         _db.Users,
-        ur => EF.Property<int?>(ur.User, "ManagerId"),
-        m => EF.Property<int?>(m, "UserId"),
+        ur => EF.Property<long?>(ur.User, "ManagerId"),
+        m => EF.Property<long?>(m, "UserId"),
         (ur, manager) => new
         {
             ur.User,
@@ -73,8 +73,8 @@ public class UsersController : ControllerBase
         var results = await _db.Users
      .Join(
          _db.Roles,
-         u => (object)EF.Property<int?>(u, "RoleId")!,
-         r => (object)EF.Property<int?>(r, "RoleId")!,
+         u => (object)EF.Property<long?>(u, "RoleId")!,
+         r => (object)EF.Property<long?>(r, "RoleId")!,
          (u, r) => new { User = u, Role = r }
      )
      .Where(ti => ti.Role != null && ti.Role.Name == "Employee")

@@ -8,7 +8,7 @@ namespace backend.Entities.Travels
     {
         [Key]
         [Column("pk_category_id")]
-        public int CategoryId { get; set; }
+        public long CategoryId { get; set; }
 
         [Required]
         [MaxLength(100)]

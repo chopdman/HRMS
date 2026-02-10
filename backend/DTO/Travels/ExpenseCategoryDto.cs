@@ -8,7 +8,7 @@ public record ExpenseCategoryCreateDto(
 );
 
 public record ExpenseCategoryResponseDto(
-    int CategoryId,
+    long CategoryId,
     string? CategoryName,
     decimal? MaxAmountPerDay
 );

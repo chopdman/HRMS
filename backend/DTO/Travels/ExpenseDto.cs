@@ -5,23 +5,23 @@ namespace backend.DTO.Travels
 {
 
 public record ExpenseCreateDto(
-    [Required] int AssignId,
-    [Required] int CategoryId,
+    [Required] long AssignId,
+    [Required] long CategoryId,
     [Required] decimal Amount,
     [Required, MaxLength(10)] string Currency,
     [Required] DateTime ExpenseDate
 );
 
 public record ExpenseResponseDto(
-    int ExpenseId,
-    // int AssignId,
-    int CategoryId,
+    long ExpenseId,
+    // long AssignId,
+    long CategoryId,
     decimal Amount,
     string Currency,
     DateTime ExpenseDate,
     ExpenseStatus Status,
     DateTime? SubmittedAt,
-    int? ReviewedById,
+    long? ReviewedById,
     DateTime? ReviewedAt,
     string? Remarks
 );

@@ -8,7 +8,7 @@ public record RoleCreateDto(
 );
 
 public record RoleResponseDto(
-    int RoleId,
+    long RoleId,
     string Name,
     string? Description
 );
