@@ -1,0 +1,39 @@
+using backend.DTO.Travels;
+using backend.Services.Travels;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace backend.Controllers.Travels;
+
+[ApiController]
+[Route("api/expense-config")]
+public class ExpenseCategoryController : ControllerBase
+{
+    private readonly ExpenseCategoryService _service;
+
+    public ExpenseCategoryController(ExpenseCategoryService service)
+    {
+        _service = service;
+    }
+
+    [Authorize(Roles = "HR")]
+    [HttpPost("categories")]
+    public async Task<IActionResult> CreateCategory([FromBody] ExpenseCategoryCreateDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await _service.CreateCategoryAsync(dto);
+        return Ok(result);
+    }
+
+    [Authorize]
+    [HttpGet("categories")]
+    public async Task<IActionResult> GetCategories()
+    {
+        var result = await _service.GetCategoriesAsync();
+        return Ok(result);
+    }
+}

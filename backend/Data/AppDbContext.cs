@@ -1,7 +1,6 @@
-﻿using backend.Entities;
+﻿using backend.Entities.Common;
 using backend.Entities.Travels;
 using Microsoft.EntityFrameworkCore;
-using System.Data;
 
 namespace backend.Data
 {

@@ -1,0 +1,10 @@
+using backend.DTO.Common;
+
+namespace backend.Repositories.Common;
+
+
+public interface IRoleRepository
+{
+    Task<RoleResponseDto> CreateRoleAsync(RoleCreateDto dto);
+    Task<IReadOnlyCollection<RoleResponseDto>> GetRolesAsync();
+}
