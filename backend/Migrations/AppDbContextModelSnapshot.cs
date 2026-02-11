@@ -22,47 +22,13 @@ namespace backend.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("backend.Entities.Notification", b =>
+            modelBuilder.Entity("backend.Entities.Common.Role", b =>
                 {
-                    b.Property<int>("NotificationId")
+                    b.Property<long>("RoleId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("pk_notification_id");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_user_id");
-
-                    b.HasKey("NotificationId");
-
-                    b.ToTable("notifications");
-                });
-
-            modelBuilder.Entity("backend.Entities.Role", b =>
-                {
-                    b.Property<int>("RoleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RoleId"));
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -81,297 +47,14 @@ namespace backend.Migrations
                     b.ToTable("roles");
                 });
 
-            modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
+            modelBuilder.Entity("backend.Entities.Common.User", b =>
                 {
-                    b.Property<int>("ExpenseId")
+                    b.Property<long>("UserId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("pk_expense_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ExpenseId"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(10,2)")
-                        .HasColumnName("amount");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_category_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("description");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_employee_id");
-
-                    b.Property<DateTime>("ExpenseDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("expense_date");
-
-                    b.Property<string>("HrRemarks")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("hr_remarks");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("reviewed_at");
-
-                    b.Property<int?>("ReviewedBy")
-                        .HasColumnType("int")
-                        .HasColumnName("reviewed_by");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
-                        .HasColumnName("status");
-
-                    b.Property<DateTime?>("SubmittedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("submitted_at");
-
-                    b.Property<int>("TravelId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_travel_id");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("ExpenseId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("ReviewedBy");
-
-                    b.HasIndex("TravelId");
-
-                    b.ToTable("expenses");
-                });
-
-            modelBuilder.Entity("backend.Entities.Travels.ExpenseCategory", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("pk_category_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
-
-                    b.Property<string>("CategoryName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("category_name");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<decimal?>("MaxAmountPerDay")
-                        .HasColumnType("decimal(10,2)")
-                        .HasColumnName("max_amount_per_day");
-
-                    b.HasKey("CategoryId");
-
-                    b.ToTable("expense_categories");
-                });
-
-            modelBuilder.Entity("backend.Entities.Travels.ExpenseProof", b =>
-                {
-                    b.Property<int>("ProofId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("pk_proof_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProofId"));
-
-                    b.Property<int>("ExpenseId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_expense_id");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("file_name");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("file_path");
-
-                    b.Property<string>("FileType")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("file_type");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("uploaded_at");
-
-                    b.HasKey("ProofId");
-
-                    b.HasIndex("ExpenseId");
-
-                    b.ToTable("expense_proofs");
-                });
-
-            modelBuilder.Entity("backend.Entities.Travels.Travel", b =>
-                {
-                    b.Property<int>("TravelId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("pk_travel_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TravelId"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_created_by");
-
-                    b.Property<string>("Destination")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("destination");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("end_date");
-
-                    b.Property<string>("Purpose")
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("purpose");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("start_date");
-
-                    b.Property<string>("TravelName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("travel_name");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("updated_at");
-
-                    b.HasKey("TravelId");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.ToTable("travels");
-                });
-
-            modelBuilder.Entity("backend.Entities.Travels.TravelAssignment", b =>
-                {
-                    b.Property<int>("AssignmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("pk_assignment_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AssignmentId"));
-
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("assigned_at");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_employee_id");
-
-                    b.Property<int>("TravelId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_travel_id");
-
-                    b.HasKey("AssignmentId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("TravelId");
-
-                    b.ToTable("travel_assignments");
-                });
-
-            modelBuilder.Entity("backend.Entities.Travels.TravelDocument", b =>
-                {
-                    b.Property<int>("DocumentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("pk_document_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocumentId"));
-
-                    b.Property<string>("DocumentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("document_type");
-
-                    b.Property<int>("EmployeeId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_employee_id");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("file_name");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("file_path");
-
-                    b.Property<int>("OwnerType")
-                        .HasColumnType("int")
-                        .HasColumnName("owner_type");
-
-                    b.Property<int>("TravelId")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_travel_id");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("uploaded_at");
-
-                    b.Property<int>("UploadedBy")
-                        .HasColumnType("int")
-                        .HasColumnName("fk_uploaded_by");
-
-                    b.HasKey("DocumentId");
-
-                    b.HasIndex("EmployeeId");
-
-                    b.HasIndex("TravelId");
-
-                    b.HasIndex("UploadedBy");
-
-                    b.ToTable("travel_documents");
-                });
-
-            modelBuilder.Entity("backend.Entities.User", b =>
-                {
-                    b.Property<int>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
+                        .HasColumnType("bigint")
                         .HasColumnName("pk_user_id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("UserId"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
@@ -411,8 +94,8 @@ namespace backend.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_active");
 
-                    b.Property<int?>("ManagerId")
-                        .HasColumnType("int")
+                    b.Property<long?>("ManagerId")
+                        .HasColumnType("bigint")
                         .HasColumnName("fk_manager_id");
 
                     b.Property<string>("Password")
@@ -446,8 +129,8 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("hash_refresh_token");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int")
+                    b.Property<long>("RoleId")
+                        .HasColumnType("bigint")
                         .HasColumnName("fk_role_id");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -466,13 +149,13 @@ namespace backend.Migrations
                     b.ToTable("users");
                 });
 
-            modelBuilder.Entity("backend.Entities.UserRefreshToken", b =>
+            modelBuilder.Entity("backend.Entities.Common.UserRefreshToken", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -496,8 +179,8 @@ namespace backend.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -511,19 +194,336 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
                 {
+                    b.Property<long>("ExpenseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_expense_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ExpenseId"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("amount");
+
+                    b.Property<long>("CategoryId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_category_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("description");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_employee_id");
+
+                    b.Property<DateTime>("ExpenseDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("expense_date");
+
+                    b.Property<string>("HrRemarks")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("hr_remarks");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<long?>("ReviewedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("reviewed_by");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<long>("TravelId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_travel_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("ExpenseId");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("ReviewedBy");
+
+                    b.HasIndex("TravelId");
+
+                    b.ToTable("expenses");
+                });
+
+            modelBuilder.Entity("backend.Entities.Travels.ExpenseCategory", b =>
+                {
+                    b.Property<long>("CategoryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_category_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CategoryId"));
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("category_name");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal?>("MaxAmountPerDay")
+                        .HasColumnType("decimal(10,2)")
+                        .HasColumnName("max_amount_per_day");
+
+                    b.HasKey("CategoryId");
+
+                    b.ToTable("expense_categories");
+                });
+
+            modelBuilder.Entity("backend.Entities.Travels.ExpenseProof", b =>
+                {
+                    b.Property<long>("ProofId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_proof_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ProofId"));
+
+                    b.Property<long>("ExpenseId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_expense_id");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("file_path");
+
+                    b.Property<int?>("FileType")
+                        .HasMaxLength(50)
+                        .HasColumnType("int")
+                        .HasColumnName("file_type");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("uploaded_at");
+
+                    b.HasKey("ProofId");
+
+                    b.HasIndex("ExpenseId");
+
+                    b.ToTable("expense_proofs");
+                });
+
+            modelBuilder.Entity("backend.Entities.Travels.Travel", b =>
+                {
+                    b.Property<long>("TravelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_travel_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TravelId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_created_by");
+
+                    b.Property<string>("Destination")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("destination");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("end_date");
+
+                    b.Property<string>("Purpose")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("purpose");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_date");
+
+                    b.Property<string>("TravelName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("travel_name");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("TravelId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.ToTable("travels");
+                });
+
+            modelBuilder.Entity("backend.Entities.Travels.TravelAssignment", b =>
+                {
+                    b.Property<long>("AssignmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_assignment_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("AssignmentId"));
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("assigned_at");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_employee_id");
+
+                    b.Property<long>("TravelId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_travel_id");
+
+                    b.HasKey("AssignmentId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("TravelId");
+
+                    b.ToTable("travel_assignments");
+                });
+
+            modelBuilder.Entity("backend.Entities.Travels.TravelDocument", b =>
+                {
+                    b.Property<long>("DocumentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_document_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("DocumentId"));
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("document_type");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_employee_id");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("file_path");
+
+                    b.Property<int>("OwnerType")
+                        .HasColumnType("int")
+                        .HasColumnName("owner_type");
+
+                    b.Property<long>("TravelId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_travel_id");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("uploaded_at");
+
+                    b.Property<long>("UploadedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_uploaded_by");
+
+                    b.HasKey("DocumentId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("TravelId");
+
+                    b.HasIndex("UploadedBy");
+
+                    b.ToTable("travel_documents");
+                });
+
+            modelBuilder.Entity("backend.Entities.Common.User", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "Manager")
+                        .WithMany("DirectReports")
+                        .HasForeignKey("ManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("backend.Entities.Common.Role", "Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Manager");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("backend.Entities.Common.UserRefreshToken", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
+                {
                     b.HasOne("backend.Entities.Travels.ExpenseCategory", "Category")
                         .WithMany("Expenses")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("backend.Entities.User", "Employee")
+                    b.HasOne("backend.Entities.Common.User", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("backend.Entities.User", "Reviewer")
+                    b.HasOne("backend.Entities.Common.User", "Reviewer")
                         .WithMany("ExpensesReviewed")
                         .HasForeignKey("ReviewedBy")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -556,7 +556,7 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.Travels.Travel", b =>
                 {
-                    b.HasOne("backend.Entities.User", "Creator")
+                    b.HasOne("backend.Entities.Common.User", "Creator")
                         .WithMany("TravelsCreated")
                         .HasForeignKey("CreatedBy")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -567,7 +567,7 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.Travels.TravelAssignment", b =>
                 {
-                    b.HasOne("backend.Entities.User", "Employee")
+                    b.HasOne("backend.Entities.Common.User", "Employee")
                         .WithMany("TravelAssignments")
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -586,7 +586,7 @@ namespace backend.Migrations
 
             modelBuilder.Entity("backend.Entities.Travels.TravelDocument", b =>
                 {
-                    b.HasOne("backend.Entities.User", "Employee")
+                    b.HasOne("backend.Entities.Common.User", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -598,7 +598,7 @@ namespace backend.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("backend.Entities.User", "Uploader")
+                    b.HasOne("backend.Entities.Common.User", "Uploader")
                         .WithMany("TravelDocumentsUploaded")
                         .HasForeignKey("UploadedBy")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -611,38 +611,24 @@ namespace backend.Migrations
                     b.Navigation("Uploader");
                 });
 
-            modelBuilder.Entity("backend.Entities.User", b =>
-                {
-                    b.HasOne("backend.Entities.User", "Manager")
-                        .WithMany("DirectReports")
-                        .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("backend.Entities.Role", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Manager");
-
-                    b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("backend.Entities.UserRefreshToken", b =>
-                {
-                    b.HasOne("backend.Entities.User", "User")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("backend.Entities.Role", b =>
+            modelBuilder.Entity("backend.Entities.Common.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("backend.Entities.Common.User", b =>
+                {
+                    b.Navigation("DirectReports");
+
+                    b.Navigation("ExpensesReviewed");
+
+                    b.Navigation("RefreshTokens");
+
+                    b.Navigation("TravelAssignments");
+
+                    b.Navigation("TravelDocumentsUploaded");
+
+                    b.Navigation("TravelsCreated");
                 });
 
             modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
@@ -662,21 +648,6 @@ namespace backend.Migrations
                     b.Navigation("Documents");
 
                     b.Navigation("Expenses");
-                });
-
-            modelBuilder.Entity("backend.Entities.User", b =>
-                {
-                    b.Navigation("DirectReports");
-
-                    b.Navigation("ExpensesReviewed");
-
-                    b.Navigation("RefreshTokens");
-
-                    b.Navigation("TravelAssignments");
-
-                    b.Navigation("TravelDocumentsUploaded");
-
-                    b.Navigation("TravelsCreated");
                 });
 #pragma warning restore 612, 618
         }

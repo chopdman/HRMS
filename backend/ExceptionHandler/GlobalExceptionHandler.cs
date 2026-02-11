@@ -1,34 +1,43 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
+﻿
 using System.Net;
+using System.Text.Json;
 
-namespace backend.ExceptionHandler
+namespace backend.ExceptionHandler;
+public class GlobalExceptionHandler
 {
+    private readonly RequestDelegate _next;
+    private readonly ILogger<GlobalExceptionHandler> _logger;
 
-    public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+    public GlobalExceptionHandler(RequestDelegate next, ILogger<GlobalExceptionHandler> logger)
     {
-        public async ValueTask<bool> TryHandleAsync(
-            HttpContext httpContext,
-            Exception exception,
-            CancellationToken cancellationToken)
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        try
         {
-            logger.LogError(exception, "Unhandled exception occurred: {Message}", exception.Message);
-
-            var problemDetails = new ProblemDetails
-            {
-                Status = (int)HttpStatusCode.InternalServerError,
-                Title = "An unexpected error occurred",
-                Detail = "Internal server error. Please retry later.",
-                Instance = httpContext.Request.Path
-            };
-
-            httpContext.Response.StatusCode = problemDetails.Status.Value;
-            httpContext.Response.ContentType = "application/json";
-
-            await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
-
-            return true;
+            await _next(context);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An unhandled exception has occurred.");
+            await HandleExceptionAsync(context, ex);
         }
     }
 
+    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    {
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+        var result = JsonSerializer.Serialize(new 
+        {
+            StatusCode = context.Response.StatusCode,
+            Message = "An internal server error occurred."+ exception.Message
+        });
+
+        return context.Response.WriteAsync(result);
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using backend.Entities.Common;
 
 namespace backend.Entities.Achievements
 {
@@ -8,22 +9,22 @@ namespace backend.Entities.Achievements
     {
         [Key]
         [Column("pk_comment_id")]
-        public int CommentId { get; set; }
+        public long CommentId { get; set; }
 
         [Required]
         [Column("fk_post_id")]
-        public int PostId { get; set; }
+        public long PostId { get; set; }
 
         [Required]
         [Column("fk_author_id")]
-        public int AuthorId { get; set; }
+        public long AuthorId { get; set; }
 
         [Required]
         [Column("comment_text")]
         public string? CommentText { get; set; }
 
         [Column("fk_parent_comment_id")]
-        public int? ParentCommentId { get; set; }
+        public long? ParentCommentId { get; set; }
 
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;

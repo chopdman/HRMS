@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using backend.Entities.Common;
 
 namespace backend.Entities.Referrals
 {
@@ -8,15 +9,15 @@ namespace backend.Entities.Referrals
     {
         [Key]
         [Column("pk_share_id")]
-        public int ShareId { get; set; }
+        public long ShareId { get; set; }
 
         [Required]
         [Column("fk_job_id")]
-        public int JobId { get; set; }
+        public long JobId { get; set; }
 
         [Required]
         [Column("fk_shared_by")]
-        public int SharedBy { get; set; }
+        public long SharedBy { get; set; }
 
         [Required]
         [MaxLength(255)]

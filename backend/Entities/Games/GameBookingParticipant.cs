@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using backend.Entities.Common;
 
 namespace backend.Entities.Games
 {
@@ -8,15 +9,15 @@ namespace backend.Entities.Games
     {
         [Key]
         [Column("pk_participant_id")]
-        public int ParticipantId { get; set; }
+        public long ParticipantId { get; set; }
 
         [Required]
         [Column("fk_booking_id")]
-        public int BookingId { get; set; }
+        public long BookingId { get; set; }
 
         [Required]
         [Column("fk_user_id")]
-        public int UserId { get; set; }
+        public long UserId { get; set; }
 
         [Column("joined_at")]
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using backend.Entities.Common;
 
 namespace backend.Entities.Referrals
 {
@@ -8,15 +9,15 @@ namespace backend.Entities.Referrals
     {
         [Key]
         [Column("pk_referral_id")]
-        public int ReferralId { get; set; }
+        public long ReferralId { get; set; }
 
         [Required]
         [Column("fk_job_id")]
-        public int JobId { get; set; }
+        public long JobId { get; set; }
 
         [Required]
         [Column("fk_referred_by")]
-        public int ReferredBy { get; set; }
+        public long ReferredBy { get; set; }
 
         [Required]
         [MaxLength(255)]
@@ -48,7 +49,7 @@ namespace backend.Entities.Referrals
         public DateTime? StatusUpdatedAt { get; set; }
 
         [Column("fk_status_updated_by")]
-        public int? StatusUpdatedBy { get; set; }
+        public long? StatusUpdatedBy { get; set; }
 
         [ForeignKey("JobId")]
         public virtual JobOpening? Job { get; set; }
