@@ -108,6 +108,8 @@ public class AuthController : ControllerBase
         var (accessToken, accessExpires) = _tokenService.GenerateAccessToken(user);
         var (refreshToken, refreshExpires, refreshHash) = _tokenService.GenerateRefreshToken(_jwtSettings.Value.RefreshTokenDays);
 
+        _tokenService.SetTokenCookie(refreshToken, Response, _jwtSettings.Value.RefreshTokenDays);
+
         var refreshEntity = new UserRefreshToken
         {
             UserId = user.UserId,
@@ -119,7 +121,7 @@ public class AuthController : ControllerBase
         await _authService.AddUserRefreshToken(refreshEntity);
 
 
-        var authResponse = new AuthResponse(accessToken, accessExpires, refreshToken, refreshExpires);
+        var authResponse = new AuthResponse(accessToken, accessExpires);
         return Created(string.Empty, new ApiResponse<AuthResponse>
         {
             Success = true,
@@ -137,7 +139,13 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var tokenHash = _tokenService.HashToken(request.RefreshToken);
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return BadRequest("Refresh token not found in cookies.");
+        }
+        var tokenHash = _tokenService.HashToken(refreshToken);
 
         //done
         var stored = await _authService.GetUserByHashToken(tokenHash);
@@ -158,7 +166,7 @@ public class AuthController : ControllerBase
         var (newRefreshToken, newRefreshExpires, newRefreshHash) = _tokenService.GenerateRefreshToken(_jwtSettings.Value.RefreshTokenDays);
 
         stored.ReplacedByTokenHash = newRefreshHash;
-
+        _tokenService.SetTokenCookie(newRefreshToken, Response, _jwtSettings.Value.RefreshTokenDays);
         //done
 
         await _authService.AddUserRefreshToken(new UserRefreshToken
@@ -171,7 +179,7 @@ public class AuthController : ControllerBase
 
 
 
-        var authResponse = new AuthResponse(newAccessToken, newAccessExpires, newRefreshToken, newRefreshExpires);
+        var authResponse = new AuthResponse(newAccessToken, newAccessExpires);
         return Created(string.Empty, new ApiResponse<AuthResponse>
         {
             Success = true,
@@ -182,14 +190,20 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout([FromBody] RefreshRequest request)
+    public async Task<IActionResult> Logout()
     {
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
+        var refreshToken = Request.Cookies["refreshToken"];
 
-        var tokenHash = _tokenService.HashToken(request.RefreshToken);
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return BadRequest("Refresh token not found in cookies.");
+        }
+
+        var tokenHash = _tokenService.HashToken(refreshToken);
         //done
         var stored = await _authService.GetUserByHashToken(tokenHash);
         if (stored is null)
@@ -204,7 +218,7 @@ public class AuthController : ControllerBase
         }
         //done
         await _authService.UpdateRevokedAtAsync(stored);
-
+        Response.Cookies.Delete("refreshToken");
         return Ok(new ApiResponse<object>
         {
             Success = true,

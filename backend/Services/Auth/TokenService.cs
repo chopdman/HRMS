@@ -6,6 +6,7 @@ using backend.Entities.Common;
 using backend.Config;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Services.Auth;
 
@@ -26,6 +27,7 @@ public class TokenService
             new(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(ClaimTypes.Role, roleName),
+            new("role",roleName),
             new("full_name", user.FullName)
         };
 
@@ -56,4 +58,17 @@ public class TokenService
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(token));
         return Convert.ToBase64String(hash);
     }
+
+    public void SetTokenCookie(string token,HttpResponse response,int daysToExpire)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Expires = DateTime.UtcNow.AddMinutes(daysToExpire),
+            Secure = true,
+            SameSite = SameSiteMode.Strict
+        };
+        response.Cookies.Append("refreshToken", token, cookieOptions);
+    }
+
 }

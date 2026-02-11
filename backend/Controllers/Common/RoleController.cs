@@ -56,7 +56,6 @@ public class RoleController : ControllerBase
         });
     }
 
-    //not needed just for testing
     [AllowAnonymous]
     [HttpGet("public")]
     public async Task<IActionResult> ListPublic()

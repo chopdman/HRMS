@@ -28,9 +28,9 @@ namespace backend.DTO.Common
 
     public record AuthResponse(
         string AccessToken,
-        DateTime AccessTokenExpiresAt,
-        string RefreshToken,
-        DateTime RefreshTokenExpiresAt
+        DateTime AccessTokenExpiresAt
+        // string RefreshToken,
+        // DateTime RefreshTokenExpiresAt
     );
 
 }
