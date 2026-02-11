@@ -3,5 +3,5 @@ namespace backend.Repositories.Travels;
 public interface IExpenseProofRepository
 {
       Task<ExpenseProof> AddAsync(ExpenseProof document);
-    Task<IReadOnlyCollection<ExpenseProof>> GetByExpenseIdAsync(int expenseId);
+    Task<IReadOnlyCollection<ExpenseProof>> GetByExpenseIdAsync(long expenseId);
 }

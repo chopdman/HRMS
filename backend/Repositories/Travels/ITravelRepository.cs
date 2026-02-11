@@ -4,7 +4,7 @@ namespace backend.Repositories.Travels;
 
 public interface ITravelRepository
 {
-    Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto, IReadOnlyCollection<int> employeeIds);
-    Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(int employeeId);
-    Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(int employeeId);
+    Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto, IReadOnlyCollection<long> employeeIds);
+    Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId);
+    Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId);
 }

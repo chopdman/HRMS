@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using backend.Services.Common;
 
 namespace backend.Controllers.Travels;
 
@@ -13,9 +14,12 @@ public class ExpenseController : ControllerBase
 {
     private readonly ExpenseService _service;
 
-    public ExpenseController(ExpenseService service)
+    private readonly AuthService _auth;
+
+    public ExpenseController(ExpenseService service,AuthService auth)
     {
         _service = service;
+        _auth = auth;
     }
 
     [Authorize(Roles = "Employee")]
@@ -27,7 +31,7 @@ public class ExpenseController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
             return Unauthorized();
@@ -54,7 +58,7 @@ public class ExpenseController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
             return Unauthorized();
@@ -75,7 +79,7 @@ public class ExpenseController : ControllerBase
     [HttpPost("{expenseId:int}/submit")]
     public async Task<IActionResult> Submit(long expenseId)
     {
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
             return Unauthorized();
@@ -101,7 +105,7 @@ public class ExpenseController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var reviewerId = GetUserId();
+        var reviewerId = _auth.GetUserId(User);
         if (reviewerId is null)
         {
             return Unauthorized();
@@ -122,7 +126,7 @@ public class ExpenseController : ControllerBase
     [HttpGet("my")]
     public async Task<IActionResult> MyExpenses()
     {
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
             return Unauthorized();
@@ -138,16 +142,5 @@ public class ExpenseController : ControllerBase
     {
         var result = await _service.ListForHrAsync(employeeId, travelId, from, to, status);
         return Ok(result);
-    }
-
-    private long? GetUserId()
-    {
-        var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        if (int.TryParse(sub, out var userId))
-        {
-            return userId;
-        }
-
-        return null;
     }
 }

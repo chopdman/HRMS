@@ -13,13 +13,13 @@ public class NotificationRepository : INotificationRepository
         _db = db;
     }
 
-    public async Task AddRangeAsync(IEnumerable<Notification> notifications)
+    public async Task AddNotificationsAsync(IEnumerable<Notification> notifications)
     {
         _db.Set<Notification>().AddRange(notifications);
         await _db.SaveChangesAsync();
     }
 
-    public async Task<IReadOnlyCollection<Notification>> GetByUserAsync(int userId)
+    public async Task<IReadOnlyCollection<Notification>> GetByUserAsync(long userId)
     {
         return await _db.Set<Notification>()
             .Where(n => n.UserId == userId)
@@ -27,7 +27,7 @@ public class NotificationRepository : INotificationRepository
             .ToListAsync();
     }
 
-    public async Task<Notification?> GetByIdAsync(int notificationId, int userId)
+    public async Task<Notification?> GetByIdAsync(long notificationId, long userId)
     {
         return await _db.Set<Notification>()
             .FirstOrDefaultAsync(n => n.NotificationId == notificationId && n.UserId == userId);

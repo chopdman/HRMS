@@ -1,5 +1,6 @@
 using backend.Data;
 using backend.DTO.Common;
+using backend.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,79 +11,42 @@ namespace backend.Controllers.Common;
 [Route("api/v1/users")]
 public class UsersController : ControllerBase
 {
-    private readonly AppDbContext _db;
 
-    public UsersController(AppDbContext db)
+    private readonly UserService _service;
+
+    public UsersController(UserService userService)
     {
-        _db = db;
+        _service = userService;
     }
 
     [Authorize(Roles = "HR")]
     [HttpGet]
     public async Task<IActionResult> ListEmployees()
     {
-        var results = _db.Users
-     .Join(
-         _db.Roles,
-         u => EF.Property<long?>(u, "RoleId"),
-         r => EF.Property<long?>(r, "RoleId"),
-         (o, i) => new { User = o, Role = i }
-     ).Join(
-        _db.Users,
-        ur => EF.Property<long?>(ur.User, "ManagerId"),
-        m => EF.Property<long?>(m, "UserId"),
-        (ur, manager) => new
+        var results = await _service.GetListOfEmployee();
+        return Ok(new ApiResponse<object>
         {
-            ur.User,
-            ur.Role,
-            ManagerName = manager.FullName
-        }
-    )
-     .Where(u => u.Role != null)
-     .AsEnumerable()
-     .OrderBy(u => u.User.FullName).Select(u => new UserResponseDto(
-         u.User.UserId,
-         u.User.FullName,
-         u.User.Email,
-         u.User.Phone,
-         u.User.DateOfBirth,
-         u.User.DateOfJoining,
-         u.User.ProfilePhotoUrl,
-         u.User.Department,
-         u.User.Designation,
-         u.ManagerName,
-         u.Role.Name
-     ))
-     .ToList();
+            Success = true,
+            Status = 200,
+            Message = "Employee fetched successfully.",
+            Data = results
+        });
 
-
-        return Ok(results);
     }
 
     [Authorize(Roles = "HR")]
     [HttpGet("search")]
     public async Task<IActionResult> SearchEmployees([FromQuery] string? query)
     {
-        if (string.IsNullOrWhiteSpace(query))
+        var trimmed = query!.Trim();
+        var results = await _service.SearchEmployee(trimmed);
+
+        return Ok(new ApiResponse<object>
         {
-            return Ok(Array.Empty<EmployeeLookupDto>());
-        }
-
-        var trimmed = query.Trim();
-
-        var results = await _db.Users
-     .Join(
-         _db.Roles,
-         u => (object)EF.Property<long?>(u, "RoleId")!,
-         r => (object)EF.Property<long?>(r, "RoleId")!,
-         (u, r) => new { User = u, Role = r }
-     )
-     .Where(ti => ti.Role != null && ti.Role.Name == "Employee")
-     .Where(ti => ti.User.FullName.Contains(@trimmed) || ti.User.Email.Contains(@trimmed))
-     .OrderBy(ti => ti.User.FullName)
-     .Select(ti => new EmployeeLookupDto(ti.User.UserId, ti.User.FullName, ti.User.Email))
-     .ToListAsync();
-
-        return Ok(results);
+            Success = true,
+            Status = 200,
+            Message = "Fetched search employee successfully.",
+            Data = results
+        });
     }
 }

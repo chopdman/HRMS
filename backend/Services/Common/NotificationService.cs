@@ -13,7 +13,7 @@ public class NotificationService
         _repo = repo;
     }
 
-    public async Task CreateForUsersAsync(IEnumerable<int> userIds, string title, string message)
+    public async Task CreateForUsersAsync(IEnumerable<long> userIds, string title, string message)
     {
         var notifications = userIds.Select(id => new Notification
         {
@@ -29,16 +29,16 @@ public class NotificationService
             return;
         }
 
-        await _repo.AddRangeAsync(notifications);
+        await _repo.AddNotificationsAsync(notifications);
     }
 
-    public async Task<IReadOnlyCollection<NotificationDto>> GetByUserAsync(int userId)
+    public async Task<IReadOnlyCollection<NotificationDto>> GetByUserAsync(long userId)
     {
         var list = await _repo.GetByUserAsync(userId);
         return list.Select(n => new NotificationDto(n.NotificationId, n.Title, n.Message, n.IsRead, n.CreatedAt)).ToList();
     }
 
-    public async Task MarkReadAsync(int notificationId, int userId, bool isRead)
+    public async Task MarkReadAsync(long notificationId, long userId, bool isRead)
     {
         var notification = await _repo.GetByIdAsync(notificationId, userId);
         if (notification is null)

@@ -5,7 +5,7 @@ using backend.DTO.Common;
 
 namespace backend.Services.Common
 {
-    public class RoleService : IRoleService
+    public class RoleService
     {
         private readonly IRoleRepository _roleRepository;
 
@@ -27,6 +27,11 @@ namespace backend.Services.Common
         public async Task<IReadOnlyCollection<RoleResponseDto>> GetAllRolesAsync()
         {
             return await _roleRepository.GetRolesAsync();
+        }
+
+        public async Task<RoleResponseDto> GetRoleById(long roleId)
+        {
+            return await _roleRepository.GetRoleByIdAsync(roleId);
         }
     }
 }

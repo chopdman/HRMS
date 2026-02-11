@@ -21,7 +21,7 @@ namespace backend.Repositories.Travels
         return document;
     }
 
-    public async Task<IReadOnlyCollection<TravelDocument>> GetAsync(int? travelId, int? employeeId)
+    public async Task<IReadOnlyCollection<TravelDocument>> GetAsync(long? travelId, long? employeeId)
     {
         var query = _db.TravelDocuments.AsNoTracking().AsQueryable();
 

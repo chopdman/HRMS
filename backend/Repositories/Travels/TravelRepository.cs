@@ -14,7 +14,7 @@ public class TravelRepository : ITravelRepository
         _db = db;
     }
 
-    public async Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto, IReadOnlyCollection<int> employeeIds)
+    public async Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto, IReadOnlyCollection<long> employeeIds)
     {
         var travel = new Travel
         {
@@ -48,7 +48,7 @@ public class TravelRepository : ITravelRepository
             travel.Assignments.Select(a => a.EmployeeId).ToList());
     }
 
-    public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(int employeeId)
+    public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId)
     {
         return await _db.TravelAssignments
             .Where(a => a.EmployeeId == employeeId)
@@ -63,7 +63,7 @@ public class TravelRepository : ITravelRepository
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(int employeeId)
+    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId)
     {
         return await _db.TravelAssignments
             .Where(a => a.EmployeeId == employeeId)

@@ -4,8 +4,8 @@ namespace backend.Repositories.Common;
 
 public interface INotificationRepository
 {
-    Task AddRangeAsync(IEnumerable<Notification> notifications);
-    Task<IReadOnlyCollection<Notification>> GetByUserAsync(int userId);
-    Task<Notification?> GetByIdAsync(int notificationId, int userId);
+    Task AddNotificationsAsync(IEnumerable<Notification> notifications);
+    Task<IReadOnlyCollection<Notification>> GetByUserAsync(long userId);
+    Task<Notification?> GetByIdAsync(long notificationId, long userId);
     Task SaveAsync();
 }

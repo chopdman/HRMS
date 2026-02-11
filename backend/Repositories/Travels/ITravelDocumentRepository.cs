@@ -5,5 +5,5 @@ namespace backend.Repositories.Travels;
 public interface ITravelDocumentRepository
 {
     Task<TravelDocument> AddAsync(TravelDocument document);
-    Task<IReadOnlyCollection<TravelDocument>> GetAsync(int? travelId, int? employeeId);
+    Task<IReadOnlyCollection<TravelDocument>> GetAsync(long? travelId, long? employeeId);
 }

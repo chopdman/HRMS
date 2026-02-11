@@ -8,56 +8,69 @@ using System.Security.Claims;
 namespace backend.Controllers.Common;
 
 [ApiController]
-[Route("api/notifications")]
+[Route("api/v1/notifications")]
 public class NotificationController : ControllerBase
 {
     private readonly NotificationService _service;
 
-    public NotificationController(NotificationService service)
+    private readonly AuthService _auth;
+
+    public NotificationController(NotificationService service,AuthService auth)
     {
         _service = service;
+        _auth = auth;
     }
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> List()
     {
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
-            return Unauthorized();
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Status = 401,
+                Message = "Invalid token, user not found."
+            });
         }
 
         var result = await _service.GetByUserAsync(userId.Value);
-        return Ok(result);
+        return Ok(new ApiResponse<Object>
+        {
+            Status = 200,
+            Success = true,
+            Message = "All notifications fetch successfully.",
+            Data = result
+        });
     }
 
     [Authorize]
     [HttpPatch("{notificationId:int}")]
-    public async Task<IActionResult> MarkRead(int notificationId, [FromBody] MarkReadDto dto)
+    public async Task<IActionResult> MarkRead(long notificationId, [FromBody] MarkReadDto dto)
     {
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
 
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
-            return Unauthorized();
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Status = 401,
+                Message = "Invalid token, user not found."
+            });
         }
 
         await _service.MarkReadAsync(notificationId, userId.Value, dto.IsRead);
-        return Ok();
-    }
-
-    private int? GetUserId()
-    {
-        var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        if (int.TryParse(sub, out var userId))
+        return Ok(new ApiResponse<object>
         {
-            return userId;
-        }
-
-        return null;
+            Status = 200,
+            Success = true,
+            Message = "Notification read successfully."
+        });
     }
 }

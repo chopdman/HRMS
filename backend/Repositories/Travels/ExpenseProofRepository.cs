@@ -20,7 +20,7 @@ public class ExpenseProofRepository : IExpenseProofRepository
         return document;
     }
 
-    public async Task<IReadOnlyCollection<ExpenseProof>> GetByExpenseIdAsync(int expenseId)
+    public async Task<IReadOnlyCollection<ExpenseProof>> GetByExpenseIdAsync(long expenseId)
     {
         return await _db.ExpenseDocuments
             .Where(d => d.ExpenseId == expenseId)

@@ -20,7 +20,7 @@ public class TravelDocumentService
         _cloudinary = cloudinary;
     }
 
-    public async Task<TravelDocumentDto> UploadAsync(TravelDocumentUploadDto dto, int currentUserId, string role)
+    public async Task<TravelDocumentDto> UploadAsync(TravelDocumentUploadDto dto, long currentUserId, string role)
     {
         if (role.Equals("Manager", StringComparison.OrdinalIgnoreCase))
         {
@@ -68,7 +68,7 @@ public class TravelDocumentService
             saved.UploadedAt);
     }
 
-    public async Task<IReadOnlyCollection<TravelDocumentDto>> ListAsync(int currentUserId, string role, int? travelId, int? employeeId)
+    public async Task<IReadOnlyCollection<TravelDocumentDto>> ListAsync(long currentUserId, string role, long? travelId, long? employeeId)
     {
         if (role.Equals("Employee", StringComparison.OrdinalIgnoreCase))
         {

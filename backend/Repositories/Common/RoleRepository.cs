@@ -41,4 +41,14 @@ public class RoleRepository : IRoleRepository
             .Select(r => new RoleResponseDto(r.RoleId, r.Name, r.Description))
             .ToListAsync();
     }
+
+    public async Task<RoleResponseDto> GetRoleByIdAsync(long roleId)
+    {
+        var role = await _db.Roles.FindAsync(roleId);
+
+        if (role == null) return null!;
+
+        return new RoleResponseDto(role.RoleId, role.Name, role.Description);
+    }
+
 }

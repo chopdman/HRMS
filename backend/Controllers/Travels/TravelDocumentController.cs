@@ -1,21 +1,24 @@
 using backend.DTO.Travels;
+using backend.Services.Common;
 using backend.Services.Travels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace backend.Controllers.Travels;
 
 [ApiController]
-[Route("api/travel-documents")]
+[Route("api/v1/travel-documents")]
 public class TravelDocumentController : ControllerBase
 {
     private readonly TravelDocumentService _service;
 
-    public TravelDocumentController(TravelDocumentService service)
+    private readonly AuthService _auth;
+
+    public TravelDocumentController(TravelDocumentService service,AuthService auth)
     {
         _service = service;
+        _auth = auth;
     }
 
     [Authorize(Roles = "HR,Employee")]
@@ -28,7 +31,7 @@ public class TravelDocumentController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
             return Unauthorized();
@@ -49,9 +52,9 @@ public class TravelDocumentController : ControllerBase
 
     [Authorize(Roles = "HR,Employee,Manager")]
     [HttpGet]
-    public async Task<IActionResult> List([FromQuery] int? travelId, [FromQuery] int? employeeId)
+    public async Task<IActionResult> List([FromQuery] long? travelId, [FromQuery] long? employeeId)
     {
-        var userId = GetUserId();
+        var userId = _auth.GetUserId(User);
         if (userId is null)
         {
             return Unauthorized();
@@ -70,14 +73,4 @@ public class TravelDocumentController : ControllerBase
         }
     }
 
-    private int? GetUserId()
-    {
-        var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        if (int.TryParse(sub, out var userId))
-        {
-            return userId;
-        }
-
-        return null;
-    }
 }

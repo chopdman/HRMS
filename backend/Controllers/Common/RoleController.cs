@@ -28,7 +28,13 @@ public class RoleController : ControllerBase
         try
         {
             var result = await _service.CreateRoleAsync(dto);
-            return CreatedAtAction(nameof(Create), new { id = result.RoleId }, result);
+            return Created(string.Empty, new ApiResponse<object>
+            {
+                Status = 201,
+                Success = true,
+                Message = "Role created successfully.",
+                Data = result
+            });
         }
         catch (ArgumentException ex)
         {
@@ -41,10 +47,16 @@ public class RoleController : ControllerBase
     public async Task<IActionResult> List()
     {
         var roles = await _service.GetAllRolesAsync();
-        return Ok(roles);
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Status = 200,
+            Message = "Role fetched successfully.",
+            Data = roles
+        });
     }
 
-//not needed just for testing
+    //not needed just for testing
     [AllowAnonymous]
     [HttpGet("public")]
     public async Task<IActionResult> ListPublic()
