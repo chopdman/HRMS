@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace backend.Controllers.Travels;
 
 [ApiController]
-[Route("api/manager")]
+[Route("api/v1/manager")]
 public class ManagerController : ControllerBase
 {
     private readonly ManagerService _service;

@@ -5,7 +5,7 @@ import { clearTokens, setTokens } from '../features/auth/authSlice'
 import type { AuthTokens } from '../features/auth/authTypes'
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5261'
-const storageKey = 'hrms.auth'
+const storageKey = 'auth'
 
 const getStoredTokens = (): AuthTokens | null => {
   const raw = localStorage.getItem(storageKey)
@@ -72,7 +72,7 @@ apiClient.interceptors.response.use(
     }
 
     const tokens = getStoredTokens()
-    if (!tokens?.refreshToken) {
+    if (!tokens?.accessToken) {
       store.dispatch(clearTokens())
       return Promise.reject(error)
     }
@@ -97,11 +97,9 @@ apiClient.interceptors.response.use(
     isRefreshing = true
 
     try {
-      const refreshResponse = await refreshClient.post<AuthTokens>('/api/auth/refresh', {
-        refreshToken: tokens.refreshToken
-      })
+      const refreshResponse = await refreshClient.post<AuthTokens>('/api/v1/auth/refresh', )
 
-      const newTokens = refreshResponse.data
+      const newTokens = refreshResponse.data.data
       persistTokens(newTokens)
       store.dispatch(setTokens(newTokens))
       resolveQueue(newTokens.accessToken)

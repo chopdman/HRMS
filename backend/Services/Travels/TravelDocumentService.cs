@@ -38,8 +38,7 @@ public class TravelDocumentService
             throw new ArgumentException("EmployeeId is required for this upload.");
         }
 
-        var upload = await _cloudinary.UploadAsync(dto.File, "travel-documents");
-// Console.WriteLine(role);
+        var upload = await _cloudinary.UploadAsync(dto.File, "travel-documents");        
         var document = new TravelDocument
         {
             TravelId = dto.TravelId,

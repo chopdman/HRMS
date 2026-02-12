@@ -1,3 +1,4 @@
+using backend.DTO.Common;
 using backend.DTO.Travels;
 using backend.Services.Common;
 using backend.Services.Travels;
@@ -15,7 +16,7 @@ public class TravelDocumentController : ControllerBase
 
     private readonly AuthService _auth;
 
-    public TravelDocumentController(TravelDocumentService service,AuthService auth)
+    public TravelDocumentController(TravelDocumentService service, AuthService auth)
     {
         _service = service;
         _auth = auth;
@@ -59,9 +60,9 @@ public class TravelDocumentController : ControllerBase
         {
             return Unauthorized();
         }
-
         var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
 
+   
         try
         {
             var result = await _service.ListAsync(userId.Value, role, travelId, employeeId);

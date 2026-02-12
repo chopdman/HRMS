@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import type { AuthState, AuthTokens } from './authTypes'
 
-const storageKey = 'hrms.auth'
+const storageKey = 'auth'
 
 const loadTokens = (): AuthTokens | null => {
   const raw = localStorage.getItem(storageKey)

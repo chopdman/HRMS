@@ -9,7 +9,7 @@ public class TravelDocumentUploadDto
     [Required]
     public long TravelId { get; set; }
 
-    [Required]
+    // [Required]
     public long? EmployeeId { get; set; }
 
     [Required, MaxLength(200)]

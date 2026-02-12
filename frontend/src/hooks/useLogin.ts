@@ -10,7 +10,6 @@ export const useLogin = () => {
     url: '/api/v1/auth/login',
     method: 'post',
     onSuccess: (data:any) => {
-      console.log(data)
       dispatch(setTokens(data.data))
     }
   })
