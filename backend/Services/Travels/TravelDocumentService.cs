@@ -39,13 +39,13 @@ public class TravelDocumentService
         }
 
         var upload = await _cloudinary.UploadAsync(dto.File, "travel-documents");
-
+// Console.WriteLine(role);
         var document = new TravelDocument
         {
             TravelId = dto.TravelId,
             EmployeeId = employeeId.Value,
             UploadedBy = currentUserId,
-            OwnerType = role.Equals("HR", StringComparison.OrdinalIgnoreCase)
+            OwnerType = role.Equals("HR")
                 ? DocumentOwnerType.HR
                 : DocumentOwnerType.Employee,
             DocumentType = dto.DocumentType,
@@ -61,7 +61,7 @@ public class TravelDocumentService
             saved.TravelId,
             saved.EmployeeId,
             saved.UploadedBy,
-            saved.OwnerType,
+            saved.OwnerType.ToString(),
             saved.DocumentType,
             saved.FileName,
             saved.FilePath,
@@ -96,7 +96,7 @@ public class TravelDocumentService
             d.TravelId,
             d.EmployeeId,
             d.UploadedBy,
-            d.OwnerType,
+            d.OwnerType.ToString(),
             d.DocumentType,
             d.FileName,
             d.FilePath,

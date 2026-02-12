@@ -14,7 +14,7 @@ public class TravelRepository : ITravelRepository
         _db = db;
     }
 
-    public async Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto, IReadOnlyCollection<long> employeeIds)
+    public async Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto, IReadOnlyCollection<long> employeeIds,long currentUserId)
     {
         var travel = new Travel
         {
@@ -23,7 +23,7 @@ public class TravelRepository : ITravelRepository
             Purpose = dto.Purpose,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
-            CreatedBy = dto.CreatedById
+            CreatedBy = currentUserId
         };
 
         foreach (var employeeId in employeeIds)
@@ -48,20 +48,20 @@ public class TravelRepository : ITravelRepository
             travel.Assignments.Select(a => a.EmployeeId).ToList());
     }
 
-    public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId)
-    {
-        return await _db.TravelAssignments
-            .Where(a => a.EmployeeId == employeeId)
-            .Include(a => a.Travel)
-            .Select(a => new TravelAssignedDto(
-                a.Travel!.TravelId,
-                a.Travel.TravelName!,
-                a.Travel.Destination!,
-                a.Travel.StartDate,
-                a.Travel.EndDate
-            ))
-            .ToListAsync();
-    }
+    // public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId)
+    // {
+    //     return await _db.TravelAssignments
+    //         .Where(a => a.EmployeeId == employeeId)
+    //         .Include(a => a.Travel)
+    //         .Select(a => new TravelAssignedDto(
+    //             a.Travel!.TravelId,
+    //             a.Travel.TravelName!,
+    //             a.Travel.Destination!,
+    //             a.Travel.StartDate,
+    //             a.Travel.EndDate
+    //         ))
+    //         .ToListAsync();
+    // }
 
     public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId)
     {

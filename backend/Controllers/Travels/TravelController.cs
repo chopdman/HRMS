@@ -1,4 +1,6 @@
+using backend.DTO.Common;
 using backend.DTO.Travels;
+using backend.Services.Common;
 using backend.Services.Travels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +15,12 @@ public class TravelController : ControllerBase
 {
     private readonly TravelService _service;
 
-    public TravelController(TravelService service)
+    private readonly AuthService _auth;
+
+    public TravelController(TravelService service, AuthService authService)
     {
         _service = service;
+        _auth = authService;
     }
 
     [Authorize(Roles = "HR")]
@@ -27,9 +32,19 @@ public class TravelController : ControllerBase
             return ValidationProblem(ModelState);
         }
 
+        var currentUserId = _auth.GetUserId(User);
+        if (currentUserId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Status = 401,
+                Message = "Invalid token, user not found."
+            });
+        }
         try
         {
-            var result = await _service.CreateTravelAsync(dto);
+            var result = await _service.CreateTravelAsync(dto, currentUserId.Value);
             return CreatedAtAction(nameof(CreateTravel), new { id = result.TravelId }, result);
         }
         catch (ArgumentException ex)
@@ -38,49 +53,31 @@ public class TravelController : ControllerBase
         }
     }
 
-    [Authorize(Roles = "Employee,Manager,HR")]
-    [HttpGet("assigned")]
-    public async Task<IActionResult> GetAssignedTravels([FromQuery] long? employeeId)
-    {
-        var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-        var subValue = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        var userId = 0;
-        if (!string.IsNullOrWhiteSpace(subValue))
-        {
-            _ = int.TryParse(subValue, out userId);
-        }
+    // [Authorize(Roles = "Employee,Manager,HR")]
+    // [HttpGet("assigned")]
+    // public async Task<IActionResult> GetAssignedTravels([FromQuery] long? employeeId)
+    // {
 
-        if (userId == 0)
-        {
-            return Unauthorized();
-        }
+    //     var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
+    //     var userId =  _auth.GetUserId(User);
 
-        var resolvedEmployeeId = role == "Employee" ? userId : employeeId;
-        if (resolvedEmployeeId is null)
-        {
-            return BadRequest(new { message = "employeeId is required for this role." });
-        }
 
-        var result = await _service.GetAssignedTravelsAsync(resolvedEmployeeId.Value);
-        return Ok(result);
-    }
+    //     var resolvedEmployeeId = role == "Employee" ? userId : employeeId;
+    //     if (resolvedEmployeeId is null)
+    //     {
+    //         return BadRequest(new { message = "employeeId is required for this role." });
+    //     }
+
+    //     var result = await _service.GetAssignedTravelsAsync(resolvedEmployeeId.Value);
+    //     return Ok(result);
+    // }
 
     [Authorize(Roles = "Employee,Manager,HR")]
     [HttpGet("assignments")]
     public async Task<IActionResult> GetAssignments([FromQuery] long? employeeId)
     {
         var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-        var subValue = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        var userId = 0;
-        if (!string.IsNullOrWhiteSpace(subValue))
-        {
-            _ = int.TryParse(subValue, out userId);
-        }
-
-        if (userId == 0)
-        {
-            return Unauthorized();
-        }
+        var userId = _auth.GetUserId(User);
 
         var resolvedEmployeeId = role == "Employee" ? userId : employeeId;
         if (resolvedEmployeeId is null)

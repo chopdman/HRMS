@@ -29,7 +29,7 @@
     <Folder Include="Controllers\Referrals\" />
     <Folder Include="Controllers\Travel\" />
     <Folder Include="Repositories\" />
-    <Content Include=".env" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include=".env" CopyToPublishDirectory="Always" />
   </ItemGroup>
 
 </Project>

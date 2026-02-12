@@ -13,7 +13,7 @@ namespace backend.DTO.Travels
         [MaxLength(2000)] string? Purpose,
         [Required] DateTime StartDate,
         [Required] DateTime EndDate,
-        [Required] long CreatedById,
+         long? CreatedById,
         [MinLength(1)] List<TravelAssignmentCreateDto> Assignments
     );
 

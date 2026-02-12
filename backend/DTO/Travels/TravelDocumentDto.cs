@@ -24,7 +24,7 @@ public record TravelDocumentDto(
     long TravelId,
     long EmployeeId,
     long UploadedById,
-    DocumentOwnerType OwnerType,
+    string OwnerType,
     string? DocumentType,
     string? FileName,
     string? FilePath,

@@ -32,13 +32,13 @@ public class TravelDocumentController : ControllerBase
         }
 
         var userId = _auth.GetUserId(User);
+
         if (userId is null)
         {
             return Unauthorized();
         }
 
         var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-
         try
         {
             var result = await _service.UploadAsync(dto, userId.Value, role);

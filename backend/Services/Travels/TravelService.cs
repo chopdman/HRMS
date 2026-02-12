@@ -10,6 +10,7 @@ public class TravelService
 {
     private readonly AppDbContext _db;
     private readonly ITravelRepository _repository;
+
     private readonly NotificationService _notifications;
     // private readonly EmailService _email;
 
@@ -23,7 +24,7 @@ public class TravelService
         // _email = email;
     }
 
-    public async Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto)
+    public async Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto,long currentUserId)
     {
         if (dto.StartDate > dto.EndDate)
         {
@@ -35,12 +36,7 @@ public class TravelService
             throw new ArgumentException("At least one employee must be assigned.");
         }
 
-        var creatorExists = await _db.Users.AnyAsync(u => u.UserId == dto.CreatedById);
-        if (!creatorExists)
-        {
-            throw new ArgumentException("CreatedBy user not found.");
-        }
-
+       
         var employeeIds = dto.Assignments.Select(a => a.EmployeeId).Distinct().ToList();
         var employeesFound = await _db.Users.Where(u => employeeIds.Contains(u.UserId)).Select(u => u.UserId).ToListAsync();
         if (employeesFound.Count != employeeIds.Count)
@@ -48,7 +44,7 @@ public class TravelService
             throw new ArgumentException("One or more assigned employees not found.");
         }
 
-        var created = await _repository.CreateTravelAsync(dto, employeeIds);
+        var created = await _repository.CreateTravelAsync(dto, employeeIds,currentUserId);
 
         var employees = await _db.Users
             .Where(u => employeeIds.Contains(u.UserId))
@@ -68,10 +64,10 @@ public class TravelService
         return created;
     }
 
-    public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId)
-    {
-        return await _repository.GetAssignedTravelsAsync(employeeId);
-    }
+    // public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId)
+    // {
+    //     return await _repository.GetAssignedTravelsAsync(employeeId);
+    // }
 
     public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId)
     {

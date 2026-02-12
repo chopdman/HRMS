@@ -32,6 +32,12 @@ if (!string.IsNullOrWhiteSpace(dbUrl))
     builder.Configuration["ConnectionStrings:DefaultConnection"] = dbUrl;
 }
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
+
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 builder.Services.AddCors(options =>
@@ -44,6 +50,8 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod().AllowCredentials();
         });
 });
+builder.Configuration.AddEnvironmentVariables();
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -90,6 +98,8 @@ builder.Services.AddScoped<ExpenseCategoryService>();
 builder.Services.AddScoped<IRoleRepository, RoleRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
+builder.Services.AddScoped<ManagerService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<EmailService>();

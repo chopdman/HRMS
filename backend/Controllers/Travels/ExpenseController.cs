@@ -2,9 +2,8 @@ using backend.Services.Travels;
 using backend.DTO.Travels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using backend.Services.Common;
+using backend.DTO.Common;
 
 namespace backend.Controllers.Travels;
 
@@ -16,7 +15,7 @@ public class ExpenseController : ControllerBase
 
     private readonly AuthService _auth;
 
-    public ExpenseController(ExpenseService service,AuthService auth)
+    public ExpenseController(ExpenseService service, AuthService auth)
     {
         _service = service;
         _auth = auth;
@@ -40,7 +39,13 @@ public class ExpenseController : ControllerBase
         try
         {
             var result = await _service.CreateDraftAsync(dto, userId.Value);
-            return Ok(result);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Status = 200,
+                Message = "Draft created for expense.",
+                Data = result
+            });
         }
         catch (ArgumentException ex)
         {
@@ -67,7 +72,12 @@ public class ExpenseController : ControllerBase
         try
         {
             await _service.UploadProofAsync(expenseId, dto, userId.Value);
-            return Ok();
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Status = 200,
+                Message = "Expense proof added successfully.",
+            });
         }
         catch (ArgumentException ex)
         {
@@ -88,7 +98,13 @@ public class ExpenseController : ControllerBase
         try
         {
             var result = await _service.SubmitAsync(expenseId, userId.Value);
-            return Ok(result);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Status = 200,
+                Message = "Expense submited successfully",
+                Data = result
+            });
         }
         catch (ArgumentException ex)
         {
@@ -114,7 +130,13 @@ public class ExpenseController : ControllerBase
         try
         {
             var result = await _service.ReviewAsync(expenseId, dto, reviewerId.Value);
-            return Ok(result);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Status = 200,
+                Message = "Expense review added successfully.",
+                Data = result
+            });
         }
         catch (ArgumentException ex)
         {
@@ -133,7 +155,13 @@ public class ExpenseController : ControllerBase
         }
 
         var result = await _service.ListForEmployeeAsync(userId.Value);
-        return Ok(result);
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Status = 200,
+            Message = "Expense fetched successfully",
+            Data = result
+        });
     }
 
     [Authorize(Roles = "HR")]

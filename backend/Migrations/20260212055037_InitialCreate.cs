@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -24,6 +24,23 @@ namespace backend.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_expense_categories", x => x.pk_category_id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "notifications",
+                columns: table => new
+                {
+                    pk_notification_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_user_id = table.Column<long>(type: "bigint", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_notifications", x => x.pk_notification_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -218,7 +235,7 @@ namespace backend.Migrations
                     fk_travel_id = table.Column<long>(type: "bigint", nullable: false),
                     fk_employee_id = table.Column<long>(type: "bigint", nullable: false),
                     fk_uploaded_by = table.Column<long>(type: "bigint", nullable: false),
-                    owner_type = table.Column<int>(type: "int", nullable: false),
+                    owner_type = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     document_type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     file_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     file_path = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
@@ -364,6 +381,9 @@ namespace backend.Migrations
         {
             migrationBuilder.DropTable(
                 name: "expense_proofs");
+
+            migrationBuilder.DropTable(
+                name: "notifications");
 
             migrationBuilder.DropTable(
                 name: "travel_assignments");

@@ -20,7 +20,8 @@ namespace backend.Data
         public DbSet<Expense> Expenses => Set<Expense>();
         public DbSet<ExpenseProof> ExpenseDocuments => Set<ExpenseProof>();
         public DbSet<UserRefreshToken> UserRefreshTokens => Set<UserRefreshToken>();
-        //public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<Notification> Notifications => Set<Notification>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -82,6 +83,10 @@ namespace backend.Data
             .WithMany(u => u.TravelDocumentsUploaded)
             .HasForeignKey(d => d.UploadedBy)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TravelDocument>().Property(d => d.OwnerType)
+            .HasConversion<string>() 
+            .IsRequired();
 
         modelBuilder.Entity<Expense>()
             .HasOne(e => e.Travel)

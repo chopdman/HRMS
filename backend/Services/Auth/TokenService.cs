@@ -6,7 +6,6 @@ using backend.Entities.Common;
 using backend.Config;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Services.Auth;
 
@@ -28,7 +27,8 @@ public class TokenService
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(ClaimTypes.Role, roleName),
             new("role",roleName),
-            new("full_name", user.FullName)
+            new("full_name", user.FullName),
+            new("user_id",user.UserId.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Secret));

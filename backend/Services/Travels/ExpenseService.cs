@@ -16,18 +16,20 @@ public class ExpenseService
     private readonly IExpenseProofRepository _documents;
     private readonly CloudinaryService _cloudinary;
     private readonly NotificationService _notifications;
-    private readonly EmailService _email;
-    private readonly IOptions<EmailSettings> _emailSettings;
+    // private readonly EmailService _email;
+    // private readonly IOptions<EmailSettings> _emailSettings;
 
-    public ExpenseService(AppDbContext db, IExpenseRepository expenses, IExpenseProofRepository documents, CloudinaryService cloudinary, NotificationService notifications, EmailService email, IOptions<EmailSettings> emailSettings)
+    public ExpenseService(AppDbContext db, IExpenseRepository expenses, IExpenseProofRepository documents, CloudinaryService cloudinary, NotificationService notifications
+    // , EmailService email, IOptions<EmailSettings> emailSettings
+    )
     {
         _db = db;
         _expenses = expenses;
         _documents = documents;
         _cloudinary = cloudinary;
         _notifications = notifications;
-        _email = email;
-        _emailSettings = emailSettings;
+        // _email = email;
+        // _emailSettings = emailSettings;
     }
 
     public async Task<ExpenseResponseDto> CreateDraftAsync(ExpenseCreateDto dto, long currentUserId)
@@ -51,7 +53,8 @@ public class ExpenseService
 
         var expense = new Expense
         {
-            //  = dto.AssignId,
+            TravelId = assignment.TravelId,
+            EmployeeId = assignment.EmployeeId,
             CategoryId = dto.CategoryId,
             Amount = dto.Amount,
             Currency = dto.Currency,
@@ -141,11 +144,11 @@ public class ExpenseService
 
             await _notifications.CreateForUsersAsync(hrUsers.Select(u => u.UserId), title, message);
 
-            var hrMailbox = _emailSettings.Value.HrMailbox;
-            if (!string.IsNullOrWhiteSpace(hrMailbox))
-            {
-                await _email.SendAsync(hrMailbox, title, message);
-            }
+            // var hrMailbox = _emailSettings.Value.HrMailbox;
+            // if (!string.IsNullOrWhiteSpace(hrMailbox))
+            // {
+            //     await _email.SendAsync(hrMailbox, title, message);
+            // }
         }
 
         return Map(expense);
@@ -162,14 +165,23 @@ public class ExpenseService
         {
             throw new ArgumentException("Remarks are required when rejecting.");
         }
+        Console.WriteLine("hiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
 
         var expense = await _expenses.GetByIdAsync(expenseId);
         if (expense is null)
         {
             throw new ArgumentException("Expense not found.");
         }
+        if(dto.Status == ExpenseStatus.Approved)
+        {
+            expense.Status = ExpenseStatus.Approved;
+        }
+        if (dto.Status == ExpenseStatus.Rejected)
+        {
+            expense.Status = ExpenseStatus.Rejected;
+        }
 
-        expense.Status = dto.Status;
+    
         expense.HrRemarks = dto.Remarks;
         expense.ReviewedBy = reviewerId;
         expense.ReviewedAt = DateTime.UtcNow;
