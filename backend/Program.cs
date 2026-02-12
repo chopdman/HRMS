@@ -14,32 +14,33 @@ using backend.Repositories.Common;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
-
+using backend.DTO.Common;
+ 
 Env.Load();
-
+ 
 var builder = WebApplication.CreateBuilder(args);
-
+ 
 var secretKey = builder.Configuration["JwtSettings:Secret"];
-
+ 
 if (string.IsNullOrEmpty(secretKey))
 {
     throw new InvalidOperationException("JWT secret key is not configured.");
 }
 var dbUrl = Environment.GetEnvironmentVariable("DB_URL");
-
+ 
 if (!string.IsNullOrWhiteSpace(dbUrl))
 {
     builder.Configuration["ConnectionStrings:DefaultConnection"] = dbUrl;
 }
-
+ 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
-
-
+ 
+ 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
+ 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
@@ -51,8 +52,8 @@ builder.Services.AddCors(options =>
         });
 });
 builder.Configuration.AddEnvironmentVariables();
-
-
+ 
+ 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -62,21 +63,28 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     {
         setupAction.InvalidModelStateResponseFactory = context =>
         {
-            var problemDetails = new ValidationProblemDetails(context.ModelState)
+            var errors = context.ModelState
+                .Where(entry => entry.Value?.Errors.Count > 0)
+                .ToDictionary(
+                    entry => entry.Key,
+                    entry => entry.Value!.Errors.Select(err => err.ErrorMessage).ToArray()
+                );
+ 
+            var payload = new ApiResponse<object>
             {
-                Title = "One or more model validation errors occurred.",
-                Status = StatusCodes.Status400BadRequest,
+                Success = false,
+                Code = StatusCodes.Status400BadRequest,
+                Error = "Validation failed.",
+                Data = errors
             };
-            return new BadRequestObjectResult(problemDetails)
-            {
-                ContentTypes = { "application/problem+json" }
-            };
+ 
+            return new BadRequestObjectResult(payload);
         };
     });
-
+ 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+ 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -103,7 +111,7 @@ builder.Services.AddScoped<ManagerService>();
 builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddScoped<EmailService>();
-
+ 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -119,7 +127,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
             ClockSkew = TimeSpan.FromMinutes(3)
         };
-
+ 
         options.Events = new JwtBearerEvents
         {
             OnAuthenticationFailed = context =>
@@ -136,47 +144,51 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 context.HandleResponse();
                 context.Response.StatusCode = 401;
                 context.Response.ContentType = "application/json";
-
-                var result = JsonSerializer.Serialize(new
+ 
+                var result = JsonSerializer.Serialize(new ApiResponse<object>
                 {
-                    Message = "You are not authorized to access this resource. Please provide a valid token."
+                    Success = false,
+                    Code = StatusCodes.Status401Unauthorized,
+                    Error = "You are not authorized to access this resource. Please provide a valid token."
                 });
-
+ 
                 await context.Response.WriteAsync(result);
             },
             OnForbidden = async context =>
             {
                 context.Response.StatusCode = 403;
                 context.Response.ContentType = "application/json";
-
-                var result = JsonSerializer.Serialize(new
+ 
+                var result = JsonSerializer.Serialize(new ApiResponse<object>
                 {
-                    Message = "You do not have permission to perform this action."
+                    Success = false,
+                    Code = StatusCodes.Status403Forbidden,
+                    Error = "You do not have permission to perform this action."
                 });
-
+ 
                 await context.Response.WriteAsync(result);
             }
         };
     });
-
-
+ 
+ 
 builder.Services.AddAuthorization();
-
+ 
 var app = builder.Build();
-
+ 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+ 
 app.UseMiddleware<GlobalExceptionHandler>();
 app.UseCors(MyAllowSpecificOrigins);
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
+ 
 app.MapControllers();
-
+ 
 app.Run();
-
+ 

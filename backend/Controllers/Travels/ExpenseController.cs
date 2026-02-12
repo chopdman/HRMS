@@ -4,23 +4,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using backend.Services.Common;
 using backend.DTO.Common;
-
+ 
 namespace backend.Controllers.Travels;
-
+ 
 [ApiController]
 [Route("api/v1/expenses")]
 public class ExpenseController : ControllerBase
 {
     private readonly ExpenseService _service;
-
+ 
     private readonly AuthService _auth;
-
+ 
     public ExpenseController(ExpenseService service, AuthService auth)
     {
         _service = service;
         _auth = auth;
     }
-
+ 
     [Authorize(Roles = "Employee")]
     [HttpPost]
     public async Task<IActionResult> CreateDraft([FromBody] ExpenseCreateDto dto)
@@ -29,30 +29,39 @@ public class ExpenseController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
-
+ 
         var userId = _auth.GetUserId(User);
         if (userId is null)
         {
-            return Unauthorized();
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
         }
-
+ 
         try
         {
             var result = await _service.CreateDraftAsync(dto, userId.Value);
             return Ok(new ApiResponse<object>
             {
                 Success = true,
-                Status = 200,
-                Message = "Draft created for expense.",
+                Code = 200,
                 Data = result
             });
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
         }
     }
-
+ 
     [Authorize(Roles = "Employee")]
     [HttpPost("{expenseId:int}/proofs")]
     [RequestSizeLimit(20_000_000)]
@@ -62,29 +71,38 @@ public class ExpenseController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
-
+ 
         var userId = _auth.GetUserId(User);
         if (userId is null)
         {
-            return Unauthorized();
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
         }
-
+ 
         try
         {
             await _service.UploadProofAsync(expenseId, dto, userId.Value);
             return Ok(new ApiResponse<object>
             {
                 Success = true,
-                Status = 200,
-                Message = "Expense proof added successfully.",
+                Code = 200,
             });
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
         }
     }
-
+ 
     [Authorize(Roles = "Employee")]
     [HttpPost("{expenseId:int}/submit")]
     public async Task<IActionResult> Submit(long expenseId)
@@ -92,26 +110,35 @@ public class ExpenseController : ControllerBase
         var userId = _auth.GetUserId(User);
         if (userId is null)
         {
-            return Unauthorized();
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
         }
-
+ 
         try
         {
             var result = await _service.SubmitAsync(expenseId, userId.Value);
             return Ok(new ApiResponse<object>
             {
                 Success = true,
-                Status = 200,
-                Message = "Expense submited successfully",
+                Code = 200,
                 Data = result
             });
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
         }
     }
-
+ 
     [Authorize(Roles = "HR")]
     [HttpPost("{expenseId:int}/review")]
     public async Task<IActionResult> Review(long expenseId, [FromBody] ExpenseReviewDto dto)
@@ -120,30 +147,39 @@ public class ExpenseController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
-
+ 
         var reviewerId = _auth.GetUserId(User);
         if (reviewerId is null)
         {
-            return Unauthorized();
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
         }
-
+ 
         try
         {
             var result = await _service.ReviewAsync(expenseId, dto, reviewerId.Value);
             return Ok(new ApiResponse<object>
             {
                 Success = true,
-                Status = 200,
-                Message = "Expense review added successfully.",
+                Code = 200,
                 Data = result
             });
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(new { message = ex.Message });
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
         }
     }
-
+ 
     [Authorize(Roles = "Employee")]
     [HttpGet("my")]
     public async Task<IActionResult> MyExpenses()
@@ -151,24 +187,34 @@ public class ExpenseController : ControllerBase
         var userId = _auth.GetUserId(User);
         if (userId is null)
         {
-            return Unauthorized();
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
         }
-
+ 
         var result = await _service.ListForEmployeeAsync(userId.Value);
         return Ok(new ApiResponse<object>
         {
             Success = true,
-            Status = 200,
-            Message = "Expense fetched successfully",
+            Code = 200,
             Data = result
         });
     }
-
+ 
     [Authorize(Roles = "HR")]
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] long? employeeId, [FromQuery] long? travelId, [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? status)
     {
         var result = await _service.ListForHrAsync(employeeId, travelId, from, to, status);
-        return Ok(result);
+        return Ok(new ApiResponse<object>
+        {
+            Success = true,
+            Code = 200,
+            Data = result
+        });
     }
 }
+ 

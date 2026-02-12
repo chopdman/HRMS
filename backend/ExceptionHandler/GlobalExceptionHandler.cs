@@ -1,6 +1,7 @@
 ﻿
 using System.Net;
 using System.Text.Json;
+using backend.DTO.Common;
 
 namespace backend.ExceptionHandler;
 public class GlobalExceptionHandler
@@ -33,9 +34,10 @@ public class GlobalExceptionHandler
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
         var result = JsonSerializer.Serialize(new 
-        {
-            StatusCode = context.Response.StatusCode,
-            Message = "An internal server error occurred."+ exception.Message
+        ApiResponse<object>{
+            Success=false,
+            Code= context.Response.StatusCode,
+            Error = "An internal server error occurred."
         });
 
         return context.Response.WriteAsync(result);
