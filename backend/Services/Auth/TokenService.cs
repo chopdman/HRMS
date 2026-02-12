@@ -64,9 +64,9 @@ public class TokenService
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Expires = DateTime.UtcNow.AddMinutes(daysToExpire),
-            Secure = true,
-            SameSite = SameSiteMode.Strict
+            Expires = DateTime.UtcNow.AddDays(daysToExpire),
+            Secure = false,
+            SameSite = SameSiteMode.Lax
         };
         response.Cookies.Append("refreshToken", token, cookieOptions);
     }

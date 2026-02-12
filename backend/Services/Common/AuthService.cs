@@ -40,7 +40,7 @@ namespace backend.Services.Common
         public long? GetUserId(ClaimsPrincipal user)
         {
             var sub = user.FindFirstValue("user_id");
-            if (int.TryParse(sub, out var userId))
+            if (long.TryParse(sub, out var userId))
             {
                 return userId;
             }

@@ -1,7 +1,9 @@
+using backend.Data;
 using backend.DTO.Common;
 using backend.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
  
 namespace backend.Controllers.Common;
  
@@ -35,7 +37,17 @@ public class UsersController : ControllerBase
     [HttpGet("search")]
     public async Task<IActionResult> SearchEmployees([FromQuery] string? query)
     {
-        var trimmed = query!.Trim();
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = "Query is required."
+            });
+        }
+ 
+        var trimmed = query.Trim();
         var results = await _service.SearchEmployee(trimmed);
  
         return Ok(new ApiResponse<object>

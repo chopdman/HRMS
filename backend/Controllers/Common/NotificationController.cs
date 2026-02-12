@@ -2,6 +2,8 @@ using backend.DTO.Common;
 using backend.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
  
 namespace backend.Controllers.Common;
  
@@ -62,12 +64,24 @@ public class NotificationController : ControllerBase
             });
         }
  
-        await _service.MarkReadAsync(notificationId, userId.Value, dto.IsRead);
-        return Ok(new ApiResponse<object>
+        try
         {
-            Success = true,
-            Code = 200
-        });
+            await _service.MarkReadAsync(notificationId, userId.Value, dto.IsRead);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return NotFound(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 404,
+                Error = ex.Message
+            });
+        }
     }
 }
  

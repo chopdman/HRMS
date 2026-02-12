@@ -13,7 +13,7 @@ public class ManagerRepository : IManagerRepository
         _db = db;
     }
 
-    public async Task<IReadOnlyCollection<TeamMemberDto>> GetTeamMembersAsync(int managerId)
+    public async Task<IReadOnlyCollection<TeamMemberDto>> GetTeamMembersAsync(long managerId)
     {
         return await _db.Users
             .Where(u => u.ManagerId == managerId)
@@ -21,7 +21,7 @@ public class ManagerRepository : IManagerRepository
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<TeamExpenseDto>> GetTeamExpensesAsync(int managerId, DateTime? from, DateTime? to)
+    public async Task<IReadOnlyCollection<TeamExpenseDto>> GetTeamExpensesAsync(long managerId, DateTime? from, DateTime? to)
     {
         var query = _db.Expenses
             .Include(e => e.Employee)

@@ -1,24 +1,26 @@
-using backend.Data;
-using backend.Services.Travels;
-using backend.Services.Common;
-using backend.Services.Auth;
-using backend.Repositories.Travels;
-using backend.ExceptionHandler;
 using backend.Config;
+using backend.Data;
+using backend.DTO.Common;
+using backend.ExceptionHandler;
+using backend.Repositories.Common;
+using backend.Repositories.Travels;
+using backend.Services.Auth;
+using backend.Services.Common;
+using backend.Services.Travels;
 using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using backend.Repositories.Common;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Mvc;
-using backend.DTO.Common;
  
 Env.Load();
  
 var builder = WebApplication.CreateBuilder(args);
+ 
+builder.Configuration.AddEnvironmentVariables();
  
 var secretKey = builder.Configuration["JwtSettings:Secret"];
  
@@ -33,12 +35,6 @@ if (!string.IsNullOrWhiteSpace(dbUrl))
     builder.Configuration["ConnectionStrings:DefaultConnection"] = dbUrl;
 }
  
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
- 
- 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
  
 builder.Services.AddCors(options =>
@@ -51,15 +47,16 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod().AllowCredentials();
         });
 });
-builder.Configuration.AddEnvironmentVariables();
- 
  
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers().AddJsonOptions(options =>
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
     {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    }).ConfigureApiBehaviorOptions(setupAction =>
+    })
+    .ConfigureApiBehaviorOptions(setupAction =>
     {
         setupAction.InvalidModelStateResponseFactory = context =>
         {
@@ -132,7 +129,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
                 if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                 {
                     context.Response.Headers.Append("Token-Expired", "true");

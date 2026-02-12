@@ -1,9 +1,8 @@
 using backend.Services.Travels;
 using backend.DTO.Common;
+using backend.Services.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
  
 namespace backend.Controllers.Travels;
  
@@ -12,17 +11,19 @@ namespace backend.Controllers.Travels;
 public class ManagerController : ControllerBase
 {
     private readonly ManagerService _service;
+    private readonly AuthService _auth;
  
-    public ManagerController(ManagerService service)
+    public ManagerController(ManagerService service, AuthService auth)
     {
         _service = service;
+        _auth = auth;
     }
  
     [Authorize(Roles = "Manager")]
     [HttpGet("team-members")]
     public async Task<IActionResult> TeamMembers()
     {
-        var managerId = GetUserId();
+        var managerId = _auth.GetUserId(User);
         if (managerId is null)
         {
             return Unauthorized(new ApiResponse<object>
@@ -46,7 +47,7 @@ public class ManagerController : ControllerBase
     [HttpGet("team-expenses")]
     public async Task<IActionResult> TeamExpenses([FromQuery] DateTime? from, [FromQuery] DateTime? to)
     {
-        var managerId = GetUserId();
+        var managerId = _auth.GetUserId(User);
         if (managerId is null)
         {
             return Unauthorized(new ApiResponse<object>
@@ -64,17 +65,6 @@ public class ManagerController : ControllerBase
             Code = 200,
             Data = result
         });
-    }
- 
-    private int? GetUserId()
-    {
-        var sub = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
-        if (int.TryParse(sub, out var userId))
-        {
-            return userId;
-        }
- 
-        return null;
     }
 }
  

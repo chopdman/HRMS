@@ -4,41 +4,49 @@ using backend.DTO.Travels;
 using backend.Services.Common;
 using backend.Repositories.Travels;
 using Microsoft.EntityFrameworkCore;
-
+ 
 namespace backend.Services.Travels;
-
+ 
 public class TravelDocumentService
 {
     private readonly AppDbContext _db;
     private readonly ITravelDocumentRepository _repository;
     private readonly CloudinaryService _cloudinary;
-
+ 
     public TravelDocumentService(AppDbContext db, ITravelDocumentRepository repository, CloudinaryService cloudinary)
     {
         _db = db;
         _repository = repository;
         _cloudinary = cloudinary;
     }
-
+ 
     public async Task<TravelDocumentDto> UploadAsync(TravelDocumentUploadDto dto, long currentUserId, string role)
     {
         if (role.Equals("Manager", StringComparison.OrdinalIgnoreCase))
         {
             throw new ArgumentException("Managers cannot upload travel documents.");
         }
-
+ 
         var employeeId = dto.EmployeeId;
         if (role.Equals("Employee", StringComparison.OrdinalIgnoreCase))
         {
             employeeId = currentUserId;
         }
-
+ 
         if (!employeeId.HasValue)
         {
             throw new ArgumentException("EmployeeId is required for this upload.");
         }
-
-        var upload = await _cloudinary.UploadAsync(dto.File, "travel-documents");        
+ 
+        var assignmentExists = await _db.TravelAssignments
+            .AnyAsync(a => a.TravelId == dto.TravelId && a.EmployeeId == employeeId.Value);
+ 
+        if (!assignmentExists)
+        {
+            throw new ArgumentException("Employee is not assigned to this travel.");
+        }
+ 
+        var upload = await _cloudinary.UploadAsync(dto.File, "travel-documents");
         var document = new TravelDocument
         {
             TravelId = dto.TravelId,
@@ -52,9 +60,9 @@ public class TravelDocumentService
             FilePath = upload.Url,
             UploadedAt = DateTime.UtcNow
         };
-
+ 
         var saved = await _repository.AddAsync(document);
-
+ 
         return new TravelDocumentDto(
             saved.DocumentId,
             saved.TravelId,
@@ -66,7 +74,7 @@ public class TravelDocumentService
             saved.FilePath,
             saved.UploadedAt);
     }
-
+ 
     public async Task<IReadOnlyCollection<TravelDocumentDto>> ListAsync(long currentUserId, string role, long? travelId, long? employeeId)
     {
         if (role.Equals("Employee", StringComparison.OrdinalIgnoreCase))
@@ -79,16 +87,16 @@ public class TravelDocumentService
             {
                 throw new ArgumentException("employeeId is required for manager view.");
             }
-
+ 
             var isTeamMember = await _db.Users
                 .AnyAsync(u => u.UserId == employeeId.Value && u.ManagerId == currentUserId);
-
+ 
             if (!isTeamMember)
             {
                 throw new ArgumentException("Manager can only view team member documents.");
             }
         }
-
+ 
         var documents = await _repository.GetAsync(travelId, employeeId);
         return documents.Select(d => new TravelDocumentDto(
             d.DocumentId,
@@ -102,3 +110,4 @@ public class TravelDocumentService
             d.UploadedAt)).ToList();
     }
 }
+ 
