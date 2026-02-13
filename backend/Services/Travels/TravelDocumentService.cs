@@ -33,24 +33,35 @@ public class TravelDocumentService
             employeeId = currentUserId;
         }
  
-        if (!employeeId.HasValue)
+        if (role.Equals("HR", StringComparison.OrdinalIgnoreCase) && !employeeId.HasValue)
+        {
+            var travelExists = await _db.Travels.AnyAsync(t => t.TravelId == dto.TravelId);
+            if (!travelExists)
+            {
+                throw new ArgumentException("Travel not found.");
+            }
+        }
+        else if (!employeeId.HasValue)
         {
             throw new ArgumentException("EmployeeId is required for this upload.");
         }
  
-        var assignmentExists = await _db.TravelAssignments
-            .AnyAsync(a => a.TravelId == dto.TravelId && a.EmployeeId == employeeId.Value);
- 
-        if (!assignmentExists)
+        if (employeeId.HasValue)
         {
-            throw new ArgumentException("Employee is not assigned to this travel.");
+            var assignmentExists = await _db.TravelAssignments
+                .AnyAsync(a => a.TravelId == dto.TravelId && a.EmployeeId == employeeId.Value);
+ 
+            if (!assignmentExists)
+            {
+                throw new ArgumentException("Employee is not assigned to this travel.");
+            }
         }
  
         var upload = await _cloudinary.UploadAsync(dto.File, "travel-documents");
         var document = new TravelDocument
         {
             TravelId = dto.TravelId,
-            EmployeeId = employeeId.Value,
+            EmployeeId = employeeId,
             UploadedBy = currentUserId,
             OwnerType = role.Equals("HR")
                 ? DocumentOwnerType.HR
@@ -77,9 +88,19 @@ public class TravelDocumentService
  
     public async Task<IReadOnlyCollection<TravelDocumentDto>> ListAsync(long currentUserId, string role, long? travelId, long? employeeId)
     {
+        IQueryable<TravelDocument> query = _db.TravelDocuments.AsNoTracking();
+ 
         if (role.Equals("Employee", StringComparison.OrdinalIgnoreCase))
         {
-            employeeId = currentUserId;
+            var assignedTravelIds = await _db.TravelAssignments
+                .Where(a => a.EmployeeId == currentUserId)
+                .Select(a => a.TravelId)
+                .ToListAsync();
+ 
+            query = query.Where(d =>
+                (d.EmployeeId == currentUserId) ||
+                (d.OwnerType == DocumentOwnerType.HR && d.EmployeeId == null && assignedTravelIds.Contains(d.TravelId))
+            );
         }
         else if (role.Equals("Manager", StringComparison.OrdinalIgnoreCase))
         {
@@ -95,9 +116,34 @@ public class TravelDocumentService
             {
                 throw new ArgumentException("Manager can only view team member documents.");
             }
+ 
+            var assignedTravelIds = await _db.TravelAssignments
+                .Where(a => a.EmployeeId == employeeId.Value)
+                .Select(a => a.TravelId)
+                .ToListAsync();
+ 
+            query = query.Where(d =>
+                (d.EmployeeId == employeeId.Value) ||
+                (d.OwnerType == DocumentOwnerType.HR && d.EmployeeId == null && assignedTravelIds.Contains(d.TravelId))
+            );
+        }
+        else
+        {
+            if (employeeId.HasValue)
+            {
+                query = query.Where(d => d.EmployeeId == employeeId.Value);
+            }
         }
  
-        var documents = await _repository.GetAsync(travelId, employeeId);
+        if (travelId.HasValue)
+        {
+            query = query.Where(d => d.TravelId == travelId.Value);
+        }
+ 
+        var documents = await query
+            .OrderByDescending(d => d.UploadedAt)
+            .ToListAsync();
+ 
         return documents.Select(d => new TravelDocumentDto(
             d.DocumentId,
             d.TravelId,
@@ -108,6 +154,62 @@ public class TravelDocumentService
             d.FileName,
             d.FilePath,
             d.UploadedAt)).ToList();
+    }
+ 
+    public async Task<TravelDocumentDto> UpdateAsync(long documentId, TravelDocumentUpdateDto dto, long currentUserId)
+    {
+        var document = await _repository.GetByIdAsync(documentId);
+        if (document is null)
+        {
+            throw new ArgumentException("Document not found.");
+        }
+ 
+        if (document.UploadedBy != currentUserId)
+        {
+            throw new ArgumentException("You can only update documents you uploaded.");
+        }
+ 
+        if (!string.IsNullOrWhiteSpace(dto.DocumentType))
+        {
+            document.DocumentType = dto.DocumentType;
+        }
+ 
+        if (dto.File is not null)
+        {
+            var upload = await _cloudinary.UploadAsync(dto.File, "travel-documents");
+            document.FileName = upload.FileName;
+            document.FilePath = upload.Url;
+            document.UploadedAt = DateTime.UtcNow;
+        }
+ 
+        await _repository.SaveAsync();
+ 
+        return new TravelDocumentDto(
+            document.DocumentId,
+            document.TravelId,
+            document.EmployeeId,
+            document.UploadedBy,
+            document.OwnerType.ToString(),
+            document.DocumentType,
+            document.FileName,
+            document.FilePath,
+            document.UploadedAt);
+    }
+ 
+    public async Task DeleteAsync(long documentId, long currentUserId)
+    {
+        var document = await _repository.GetByIdAsync(documentId);
+        if (document is null)
+        {
+            throw new ArgumentException("Document not found.");
+        }
+ 
+        if (document.UploadedBy != currentUserId)
+        {
+            throw new ArgumentException("You can only delete documents you uploaded.");
+        }
+ 
+        await _repository.DeleteAsync(document);
     }
 }
  

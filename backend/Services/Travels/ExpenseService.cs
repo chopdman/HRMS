@@ -16,18 +16,20 @@ public class ExpenseService
     private readonly IExpenseProofRepository _documents;
     private readonly CloudinaryService _cloudinary;
     private readonly NotificationService _notifications;
-    private readonly EmailService _email;
-    private readonly IOptions<EmailSettings> _emailSettings;
+    // private readonly EmailService _email;
+    // private readonly IOptions<EmailSettings> _emailSettings;
  
-    public ExpenseService(AppDbContext db, IExpenseRepository expenses, IExpenseProofRepository documents, CloudinaryService cloudinary, NotificationService notifications, EmailService email, IOptions<EmailSettings> emailSettings)
+    public ExpenseService(AppDbContext db, IExpenseRepository expenses, IExpenseProofRepository documents, CloudinaryService cloudinary, NotificationService notifications
+    // , EmailService email, IOptions<EmailSettings> emailSettings
+    )
     {
         _db = db;
         _expenses = expenses;
         _documents = documents;
         _cloudinary = cloudinary;
         _notifications = notifications;
-        _email = email;
-        _emailSettings = emailSettings;
+        // _email = email;
+        // _emailSettings = emailSettings;
     }
  
     public async Task<ExpenseResponseDto> CreateDraftAsync(ExpenseCreateDto dto, long currentUserId)
@@ -142,11 +144,11 @@ public class ExpenseService
  
             await _notifications.CreateForUsersAsync(hrUsers.Select(u => u.UserId), title, message);
  
-            var hrMailbox = _emailSettings.Value.HrMailbox;
-            if (!string.IsNullOrWhiteSpace(hrMailbox))
-            {
-                await _email.SendAsync(hrMailbox, title, message);
-            }
+            // var hrMailbox = _emailSettings.Value.HrMailbox;
+            // if (!string.IsNullOrWhiteSpace(hrMailbox))
+            // {
+            //     await _email.SendAsync(hrMailbox, title, message);
+            // }
         }
  
         return Map(expense);
@@ -176,6 +178,92 @@ public class ExpenseService
  
         await _expenses.SaveAsync();
         return Map(expense);
+    }
+ 
+    public async Task<ExpenseResponseDto> UpdateDraftAsync(long expenseId, ExpenseUpdateDto dto, long currentUserId)
+    {
+        var expense = await _expenses.GetByIdAsync(expenseId);
+        if (expense is null)
+        {
+            throw new ArgumentException("Expense not found.");
+        }
+ 
+        if (expense.EmployeeId != currentUserId)
+        {
+            throw new ArgumentException("You can only update your own expenses.");
+        }
+ 
+        if (expense.Status != ExpenseStatus.Draft)
+        {
+            throw new ArgumentException("Only draft expenses can be updated.");
+        }
+ 
+        var travel = await _db.Travels.FirstOrDefaultAsync(t => t.TravelId == expense.TravelId);
+        if (travel is null)
+        {
+            throw new ArgumentException("Travel not found.");
+        }
+ 
+        ValidateExpenseWindow(dto.ExpenseDate, travel);
+        await ValidateAmountAsync(dto.CategoryId, dto.Amount);
+ 
+        expense.CategoryId = dto.CategoryId;
+        expense.Amount = dto.Amount;
+        expense.Currency = dto.Currency;
+        expense.ExpenseDate = dto.ExpenseDate;
+        expense.UpdatedAt = DateTime.UtcNow;
+ 
+        await _expenses.SaveAsync();
+        return Map(expense);
+    }
+ 
+    public async Task DeleteDraftAsync(long expenseId, long currentUserId)
+    {
+        var expense = await _expenses.GetByIdAsync(expenseId);
+        if (expense is null)
+        {
+            throw new ArgumentException("Expense not found.");
+        }
+ 
+        if (expense.EmployeeId != currentUserId)
+        {
+            throw new ArgumentException("You can only delete your own expenses.");
+        }
+ 
+        if (expense.Status != ExpenseStatus.Draft)
+        {
+            throw new ArgumentException("Only draft expenses can be deleted.");
+        }
+ 
+        _db.Expenses.Remove(expense);
+        await _db.SaveChangesAsync();
+    }
+ 
+    public async Task DeleteProofAsync(long expenseId, long proofId, long currentUserId)
+    {
+        var expense = await _expenses.GetByIdAsync(expenseId);
+        if (expense is null)
+        {
+            throw new ArgumentException("Expense not found.");
+        }
+ 
+        if (expense.EmployeeId != currentUserId)
+        {
+            throw new ArgumentException("You can only edit your own expenses.");
+        }
+ 
+        if (expense.Status != ExpenseStatus.Draft)
+        {
+            throw new ArgumentException("Proofs can only be removed for draft expenses.");
+        }
+ 
+        var proof = await _documents.GetByIdAsync(proofId);
+        if (proof is null || proof.ExpenseId != expenseId)
+        {
+            throw new ArgumentException("Proof not found.");
+        }
+ 
+        await _documents.DeleteAsync(proof);
     }
  
     public async Task<IReadOnlyCollection<ExpenseResponseDto>> ListForEmployeeAsync(long employeeId)
@@ -219,9 +307,20 @@ public class ExpenseService
  
     private static ExpenseResponseDto Map(Expense expense)
     {
+        var proofs = expense.ProofDocuments
+            .OrderBy(p => p.UploadedAt)
+            .Select(p => new ExpenseProofDto(
+                p.ProofId,
+                p.FileName ?? string.Empty,
+                p.FilePath ?? string.Empty,
+                p.FileType?.ToString(),
+                p.UploadedAt))
+            .ToList();
+ 
         return new ExpenseResponseDto(
             expense.ExpenseId,
             // expense.AssignId,
+            expense.EmployeeId,
             expense.CategoryId,
             expense.Amount,
             expense.Currency,
@@ -230,7 +329,8 @@ public class ExpenseService
             expense.SubmittedAt,
             expense.ReviewedBy,
             expense.ReviewedAt,
-            expense.HrRemarks);
+            expense.HrRemarks,
+            proofs);
     }
 }
  

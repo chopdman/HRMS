@@ -104,5 +104,82 @@ public class TravelDocumentController : ControllerBase
         }
     }
  
+    [Authorize(Roles = "HR,Employee")]
+    [HttpPut("{documentId:int}")]
+    [RequestSizeLimit(20_000_000)]
+    public async Task<IActionResult> Update(long documentId, [FromForm] TravelDocumentUpdateDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+ 
+        var userId = _auth.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+ 
+        try
+        {
+            var result = await _service.UpdateAsync(documentId, dto, userId.Value);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200,
+                Data = result
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
+        }
+    }
+ 
+    [Authorize(Roles = "HR,Employee")]
+    [HttpDelete("{documentId:int}")]
+    public async Task<IActionResult> Delete(long documentId)
+    {
+        var userId = _auth.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+ 
+        try
+        {
+            await _service.DeleteAsync(documentId, userId.Value);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
+        }
+    }
+ 
 }
  

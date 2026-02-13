@@ -181,6 +181,117 @@ public class ExpenseController : ControllerBase
     }
  
     [Authorize(Roles = "Employee")]
+    [HttpPut("{expenseId:int}")]
+    public async Task<IActionResult> UpdateDraft(long expenseId, [FromBody] ExpenseUpdateDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+ 
+        var userId = _auth.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+ 
+        try
+        {
+            var result = await _service.UpdateDraftAsync(expenseId, dto, userId.Value);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200,
+                Data = result
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
+        }
+    }
+ 
+    [Authorize(Roles = "Employee")]
+    [HttpDelete("{expenseId:int}")]
+    public async Task<IActionResult> DeleteDraft(long expenseId)
+    {
+        var userId = _auth.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+ 
+        try
+        {
+            await _service.DeleteDraftAsync(expenseId, userId.Value);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
+        }
+    }
+ 
+    [Authorize(Roles = "Employee")]
+    [HttpDelete("{expenseId:int}/proofs/{proofId:int}")]
+    public async Task<IActionResult> DeleteProof(long expenseId, long proofId)
+    {
+        var userId = _auth.GetUserId(User);
+        if (userId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+ 
+        try
+        {
+            await _service.DeleteProofAsync(expenseId, proofId, userId.Value);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
+        }
+    }
+ 
+    [Authorize(Roles = "Employee")]
     [HttpGet("my")]
     public async Task<IActionResult> MyExpenses()
     {

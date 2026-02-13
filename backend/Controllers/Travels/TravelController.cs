@@ -109,5 +109,81 @@ public class TravelController : ControllerBase
         });
     }
  
+    [Authorize(Roles = "HR")]
+    [HttpPut("{travelId:int}")]
+    public async Task<IActionResult> UpdateTravel(long travelId, [FromBody] TravelUpdateDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+ 
+        var currentUserId = _auth.GetUserId(User);
+        if (currentUserId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+ 
+        try
+        {
+            var result = await _service.UpdateTravelAsync(travelId, dto, currentUserId.Value);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200,
+                Data = result
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
+        }
+    }
+ 
+    [Authorize(Roles = "HR")]
+    [HttpDelete("{travelId:int}")]
+    public async Task<IActionResult> DeleteTravel(long travelId)
+    {
+        var currentUserId = _auth.GetUserId(User);
+        if (currentUserId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+ 
+        try
+        {
+            await _service.DeleteTravelAsync(travelId, currentUserId.Value);
+            return Ok(new ApiResponse<object>
+            {
+                Success = true,
+                Code = 200
+            });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = ex.Message
+            });
+        }
+    }
+ 
 }
  

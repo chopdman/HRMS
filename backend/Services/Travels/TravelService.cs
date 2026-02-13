@@ -12,14 +12,16 @@ public class TravelService
     private readonly ITravelRepository _repository;
  
     private readonly NotificationService _notifications;
-    private readonly EmailService _email;
+    // private readonly EmailService _email;
  
-    public TravelService(AppDbContext db, ITravelRepository repository, NotificationService notifications, EmailService email)
+    public TravelService(AppDbContext db, ITravelRepository repository, NotificationService notifications
+    // , EmailService email
+    )
     {
         _db = db;
         _repository = repository;
         _notifications = notifications;
-        _email = email;
+        // _email = email;
     }
  
     public async Task<TravelResponseDto> CreateTravelAsync(TravelCreateDto dto, long currentUserId)
@@ -54,10 +56,10 @@ public class TravelService
  
         await _notifications.CreateForUsersAsync(employees.Select(e => e.UserId), title, message);
  
-        foreach (var employee in employees)
-        {
-            await _email.SendAsync(employee.Email, title, message);
-        }
+        // foreach (var employee in employees)
+        // {
+        //     await _email.SendAsync(employee.Email, title, message);
+        // }
  
         return created;
     }
@@ -70,6 +72,65 @@ public class TravelService
     public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId)
     {
         return await _repository.GetAssignmentsForEmployeeAsync(employeeId);
+    }
+ 
+    public async Task<TravelResponseDto> UpdateTravelAsync(long travelId, TravelUpdateDto dto, long currentUserId)
+    {
+        if (dto.StartDate > dto.EndDate)
+        {
+            throw new ArgumentException("Start date must be on or before end date.");
+        }
+ 
+        var travel = await _repository.GetByIdAsync(travelId);
+        if (travel is null)
+        {
+            throw new ArgumentException("Travel not found.");
+        }
+ 
+        if (travel.CreatedBy != currentUserId)
+        {
+            throw new ArgumentException("You can only update travels you created.");
+        }
+ 
+        travel.TravelName = dto.TravelName;
+        travel.Destination = dto.Destination;
+        travel.Purpose = dto.Purpose;
+        travel.StartDate = dto.StartDate;
+        travel.EndDate = dto.EndDate;
+        travel.UpdatedAt = DateTime.UtcNow;
+ 
+        await _repository.SaveAsync();
+ 
+        var assignedEmployeeIds = await _db.TravelAssignments
+            .Where(a => a.TravelId == travelId)
+            .Select(a => a.EmployeeId)
+            .ToListAsync();
+ 
+        return new TravelResponseDto(
+            travel.TravelId,
+            travel.TravelName ?? string.Empty,
+            travel.Destination ?? string.Empty,
+            travel.Purpose,
+            travel.StartDate,
+            travel.EndDate,
+            travel.CreatedBy,
+            assignedEmployeeIds);
+    }
+ 
+    public async Task DeleteTravelAsync(long travelId, long currentUserId)
+    {
+        var travel = await _repository.GetByIdAsync(travelId);
+        if (travel is null)
+        {
+            throw new ArgumentException("Travel not found.");
+        }
+ 
+        if (travel.CreatedBy != currentUserId)
+        {
+            throw new ArgumentException("You can only delete travels you created.");
+        }
+ 
+        await _repository.DeleteAsync(travel);
     }
  
 }

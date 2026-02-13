@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace backend.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -233,7 +233,7 @@ namespace backend.Migrations
                     pk_document_id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     fk_travel_id = table.Column<long>(type: "bigint", nullable: false),
-                    fk_employee_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_employee_id = table.Column<long>(type: "bigint", nullable: true),
                     fk_uploaded_by = table.Column<long>(type: "bigint", nullable: false),
                     owner_type = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     document_type = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),

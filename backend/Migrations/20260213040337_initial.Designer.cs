@@ -12,8 +12,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260212055037_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260213040337_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -474,7 +474,7 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("document_type");
 
-                    b.Property<long>("EmployeeId")
+                    b.Property<long?>("EmployeeId")
                         .HasColumnType("bigint")
                         .HasColumnName("fk_employee_id");
 
@@ -627,8 +627,7 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Common.User", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("backend.Entities.Travels.Travel", "Travel")
                         .WithMany("Documents")
