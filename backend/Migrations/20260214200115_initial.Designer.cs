@@ -12,7 +12,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260213040337_initial")]
+    [Migration("20260214200115_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -55,6 +55,8 @@ namespace backend.Migrations
                         .HasColumnName("fk_user_id");
 
                     b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("notifications");
                 });
@@ -518,6 +520,15 @@ namespace backend.Migrations
                     b.ToTable("travel_documents");
                 });
 
+            modelBuilder.Entity("backend.Entities.Common.Notification", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("backend.Entities.Common.User", b =>
                 {
                     b.HasOne("backend.Entities.Common.User", "Manager")
@@ -632,7 +643,7 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Travels.Travel", "Travel")
                         .WithMany("Documents")
                         .HasForeignKey("TravelId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("backend.Entities.Common.User", "Uploader")

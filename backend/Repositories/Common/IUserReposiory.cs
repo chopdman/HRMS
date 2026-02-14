@@ -6,12 +6,21 @@ namespace backend.Repositories.Common;
 
 public interface IUserRepository
 {
-Task<int> AddUserAsync(User user);
+    Task<int> AddUserAsync(User user);
 
-Task<User?> GetUserByEmailAsync(string email);
+    Task<User?> GetUserByEmailAsync(string email);
 
-Task<List<UserResponseDto>> GetListOfEmployeeAsync();
+    Task<User?> GetByIdAsync(long userId);
 
- Task<object> SearchEmployeeAsync(string trimmed);
+    Task<UserResponseDto?> GetUserProfileAsync(long userId);
+
+    Task<List<OrgChartUserDto>> GetOrgChartUsersAsync();
+
+    Task<List<OrgChartUserDto>> SearchOrgChartUsersAsync(string trimmed);
+
+    Task<List<UserResponseDto>> GetListOfEmployeeAsync();
+
+    Task SaveAsync();
+
+    Task<object> SearchEmployeeAsync(string trimmed);
 }
-

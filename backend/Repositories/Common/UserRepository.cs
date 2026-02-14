@@ -26,6 +26,67 @@ namespace backend.Repositories.Common
 
         }
 
+        public async Task<User?> GetByIdAsync(long userId)
+        {
+            return await _db.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+        }
+
+        public async Task<UserResponseDto?> GetUserProfileAsync(long userId)
+        {
+            return await _db.Users
+                .Include(u => u.Role)
+                .Include(u => u.Manager)
+                .Where(u => u.UserId == userId)
+                .Select(u => new UserResponseDto(
+                    u.UserId,
+                    u.FullName,
+                    u.Email,
+                    u.Phone,
+                    u.DateOfBirth,
+                    u.DateOfJoining,
+                    u.ProfilePhotoUrl,
+                    u.Department,
+                    u.Designation,
+                    u.Manager != null ? u.Manager.FullName : null,
+                    u.Role != null ? u.Role.Name : null
+                ))
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<OrgChartUserDto>> GetOrgChartUsersAsync()
+        {
+            return await _db.Users
+                .OrderBy(u => u.FullName)
+                .Select(u => new OrgChartUserDto(
+                    u.UserId,
+                    u.FullName,
+                    u.Email,
+                    u.Department,
+                    u.Designation,
+                    u.ProfilePhotoUrl,
+                    u.ManagerId
+                ))
+                .ToListAsync();
+        }
+
+        public async Task<List<OrgChartUserDto>> SearchOrgChartUsersAsync(string trimmed)
+        {
+            var lowered = trimmed.ToLower();
+            return await _db.Users
+                .Where(u => u.FullName.ToLower().Contains(lowered) || u.Email.ToLower().Contains(lowered))
+                .OrderBy(u => u.FullName)
+                .Select(u => new OrgChartUserDto(
+                    u.UserId,
+                    u.FullName,
+                    u.Email,
+                    u.Department,
+                    u.Designation,
+                    u.ProfilePhotoUrl,
+                    u.ManagerId
+                ))
+                .ToListAsync();
+        }
+
         public async Task<List<UserResponseDto>> GetListOfEmployeeAsync()
         {
             return _db.Users.Join(_db.Roles,
@@ -70,11 +131,16 @@ namespace backend.Repositories.Common
          (u, r) => new { User = u, Role = r }
      )
      .Where(ti => ti.Role != null && ti.Role.Name == "Employee")
-  .Where(ti => ti.User.FullName.ToLower().Contains(trimmed.ToLower()) || 
+  .Where(ti => ti.User.FullName.ToLower().Contains(trimmed.ToLower()) ||
              ti.User.Email.ToLower().Contains(trimmed.ToLower()))
      .OrderBy(ti => ti.User.FullName)
      .Select(ti => new EmployeeLookupDto(ti.User.UserId, ti.User.FullName, ti.User.Email))
      .ToList();
+        }
+
+        public async Task SaveAsync()
+        {
+            await _db.SaveChangesAsync();
         }
     }
 }

@@ -27,23 +27,6 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "notifications",
-                columns: table => new
-                {
-                    pk_notification_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    fk_user_id = table.Column<long>(type: "bigint", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_notifications", x => x.pk_notification_id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "roles",
                 columns: table => new
                 {
@@ -96,6 +79,29 @@ namespace backend.Migrations
                         principalTable: "users",
                         principalColumn: "pk_user_id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "notifications",
+                columns: table => new
+                {
+                    pk_notification_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_user_id = table.Column<long>(type: "bigint", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    IsRead = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_notifications", x => x.pk_notification_id);
+                    table.ForeignKey(
+                        name: "FK_notifications_users_fk_user_id",
+                        column: x => x.fk_user_id,
+                        principalTable: "users",
+                        principalColumn: "pk_user_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -249,7 +255,7 @@ namespace backend.Migrations
                         column: x => x.fk_travel_id,
                         principalTable: "travels",
                         principalColumn: "pk_travel_id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_travel_documents_users_fk_employee_id",
                         column: x => x.fk_employee_id,
@@ -311,6 +317,11 @@ namespace backend.Migrations
                 name: "IX_expenses_reviewed_by",
                 table: "expenses",
                 column: "reviewed_by");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_notifications_fk_user_id",
+                table: "notifications",
+                column: "fk_user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_roles_Name",

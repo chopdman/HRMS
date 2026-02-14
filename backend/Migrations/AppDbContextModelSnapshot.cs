@@ -53,6 +53,8 @@ namespace backend.Migrations
 
                     b.HasKey("NotificationId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("notifications");
                 });
 
@@ -515,6 +517,15 @@ namespace backend.Migrations
                     b.ToTable("travel_documents");
                 });
 
+            modelBuilder.Entity("backend.Entities.Common.Notification", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("backend.Entities.Common.User", b =>
                 {
                     b.HasOne("backend.Entities.Common.User", "Manager")
@@ -629,7 +640,7 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Travels.Travel", "Travel")
                         .WithMany("Documents")
                         .HasForeignKey("TravelId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("backend.Entities.Common.User", "Uploader")
