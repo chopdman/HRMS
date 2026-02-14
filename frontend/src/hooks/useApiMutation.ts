@@ -16,7 +16,7 @@ export const useApiMutation = <TData, TVariables>(options: MutationOptions<TData
         method: options.method ?? 'post',
         data: variables
       })
-      return response.data
+      return response.data?.data ?? response.data;
     },
     onSuccess: options.onSuccess,
     onError: options.onError

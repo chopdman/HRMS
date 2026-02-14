@@ -6,11 +6,13 @@ import './index.css'
 import App from './App'
 import { store } from './config/store'
 import { queryClient } from './config/queryClient'
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
+         <ReactQueryDevtools initialIsOpen={false} />
         <App />
       </QueryClientProvider>
     </Provider>

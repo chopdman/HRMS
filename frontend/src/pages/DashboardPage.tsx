@@ -30,7 +30,7 @@ export const DashboardPage = () => {
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        <StatCard label="Assigned travels" value="—"  />
+        {/* <StatCard label="Assigned travels" value="—"  /> */}
        {isHr && <StatCard
           label="Expenses awaiting review"
           value={isHr ? String(pendingCount) : '—'}

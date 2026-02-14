@@ -1,8 +1,7 @@
 export type TravelDocument = {
   documentId: number
-  assignId: number
   travelId: number
-  employeeId: number
+  employeeId?: number | null
   uploadedById: number
   ownerType: string
   documentType: string
@@ -10,3 +9,4 @@ export type TravelDocument = {
   filePath: string
   uploadedAt: string
 }
+ 

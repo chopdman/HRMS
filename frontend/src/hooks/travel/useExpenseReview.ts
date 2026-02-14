@@ -15,6 +15,6 @@ export const useReviewExpense = () =>
         status,
         remarks
       })
-      return response.data
+      return response.data?.data ?? response.data;
     }
   })

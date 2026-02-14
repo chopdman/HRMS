@@ -35,7 +35,7 @@ export const SearchableSelect = ({
 
   return (
     <label className="block space-y-2 text-sm">
-      <span className="font-medium text-slate-700">{label}</span>
+      <span className="font-medium text-slate-700 pr-2">{label}</span>
       <input
         className={`
           'w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200'
@@ -73,7 +73,7 @@ export const SearchableSelect = ({
       {value ? (
         <button
           type="button"
-          className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+          className="text-xs font-semibold  text-slate-500 hover:text-slate-700"
           onClick={() => onChange(undefined)}
         >
           Clear selection

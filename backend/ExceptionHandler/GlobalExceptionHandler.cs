@@ -24,11 +24,11 @@ public class GlobalExceptionHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception has occurred.");
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static Task HandleExceptionAsync(HttpContext context)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
