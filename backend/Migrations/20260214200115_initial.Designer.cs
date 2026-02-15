@@ -12,7 +12,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260210105535_initial")]
+    [Migration("20260214200115_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -24,6 +24,42 @@ namespace backend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("backend.Entities.Common.Notification", b =>
+                {
+                    b.Property<long>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_notification_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("NotificationId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_user_id");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("notifications");
+                });
 
             modelBuilder.Entity("backend.Entities.Common.Role", b =>
                 {
@@ -440,7 +476,7 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(100)")
                         .HasColumnName("document_type");
 
-                    b.Property<long>("EmployeeId")
+                    b.Property<long?>("EmployeeId")
                         .HasColumnType("bigint")
                         .HasColumnName("fk_employee_id");
 
@@ -456,8 +492,9 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("file_path");
 
-                    b.Property<int>("OwnerType")
-                        .HasColumnType("int")
+                    b.Property<string>("OwnerType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("owner_type");
 
                     b.Property<long>("TravelId")
@@ -481,6 +518,15 @@ namespace backend.Migrations
                     b.HasIndex("UploadedBy");
 
                     b.ToTable("travel_documents");
+                });
+
+            modelBuilder.Entity("backend.Entities.Common.Notification", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("backend.Entities.Common.User", b =>
@@ -592,13 +638,12 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Common.User", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("backend.Entities.Travels.Travel", "Travel")
                         .WithMany("Documents")
                         .HasForeignKey("TravelId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("backend.Entities.Common.User", "Uploader")

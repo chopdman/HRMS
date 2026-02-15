@@ -39,8 +39,8 @@ namespace backend.Services.Common
 
         public long? GetUserId(ClaimsPrincipal user)
         {
-            var sub = user.FindFirstValue(JwtRegisteredClaimNames.Sub);
-            if (int.TryParse(sub, out var userId))
+            var sub = user.FindFirstValue("user_id");
+            if (long.TryParse(sub, out var userId))
             {
                 return userId;
             }

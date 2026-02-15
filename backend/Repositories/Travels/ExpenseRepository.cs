@@ -32,15 +32,17 @@ public class ExpenseRepository : IExpenseRepository
     {
         return await _db.Expenses
             // .Include(e => e.Assignment)
+            .Include(e => e.ProofDocuments)
             .Where(e => e.EmployeeId == employeeId)
             .OrderByDescending(e => e.ExpenseDate)
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<Expense>> GetFilteredAsync(long? employeeId, long? travelId, DateTime? from, DateTime? to, string? status)
+    public async Task<IReadOnlyCollection<Expense>> GetFilteredAsync(long? employeeId, long? travelId, DateTime? from, DateTime? to, string? status, long? createdById)
     {
         var query = _db.Expenses
             // .Include(e => e.Assignment)
+            .Include(e => e.ProofDocuments)
             .AsQueryable();
 
         if (employeeId.HasValue)
@@ -66,6 +68,11 @@ public class ExpenseRepository : IExpenseRepository
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<ExpenseStatus>(status, true, out var parsed))
         {
             query = query.Where(e => e.Status == parsed);
+        }
+
+        if (createdById.HasValue)
+        {
+            query = query.Where(e => _db.Travels.Any(t => t.TravelId == e.TravelId && t.CreatedBy == createdById.Value));
         }
 
         return await query

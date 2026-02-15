@@ -1,6 +1,7 @@
 ﻿
 using System.Net;
 using System.Text.Json;
+using backend.DTO.Common;
 
 namespace backend.ExceptionHandler;
 public class GlobalExceptionHandler
@@ -23,19 +24,20 @@ public class GlobalExceptionHandler
         catch (Exception ex)
         {
             _logger.LogError(ex, "An unhandled exception has occurred.");
-            await HandleExceptionAsync(context, ex);
+            await HandleExceptionAsync(context);
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private static Task HandleExceptionAsync(HttpContext context)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
         var result = JsonSerializer.Serialize(new 
-        {
-            StatusCode = context.Response.StatusCode,
-            Message = "An internal server error occurred."+ exception.Message
+        ApiResponse<object>{
+            Success=false,
+            Code= context.Response.StatusCode,
+            Error = "An internal server error occurred."
         });
 
         return context.Response.WriteAsync(result);

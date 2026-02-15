@@ -1,14 +1,13 @@
 using backend.Config;
-using backend.Data;
 using backend.Entities.Common;
 using backend.DTO.Common;
 using backend.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using backend.Services.Common;
-
+ 
 namespace backend.Controllers.Common;
-
+ 
 [ApiController]
 [Route("api/v1/auth")]
 public class AuthController : ControllerBase
@@ -16,7 +15,7 @@ public class AuthController : ControllerBase
     private readonly PasswordHasher _hasher;
     private readonly TokenService _tokenService;
     private readonly IOptions<JwtSettings> _jwtSettings;
-
+ 
     private readonly AuthService _authService;
     private readonly RoleService _roleService;
     private readonly UserService _userService;
@@ -29,7 +28,7 @@ public class AuthController : ControllerBase
         _roleService = roleService;
         _userService = userService;
     }
-
+ 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
@@ -37,15 +36,15 @@ public class AuthController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
-
+ 
         var exists = await _authService.ExistsByEmail(request.Email);
         if (exists)
         {
             return BadRequest(new ApiResponse<object>
             {
                 Success = false,
-                Status = 400,
-                Errors = new List<string> { "Email already registered." }
+                Code = 400,
+                Error = "Email already registered."
             });
         }
         //done
@@ -55,11 +54,11 @@ public class AuthController : ControllerBase
             return BadRequest(new ApiResponse<object>
             {
                 Success = false,
-                Status = 400,
-                Message = "Role not found."
+                Code = 400,
+                Error = "Role not found."
             });
         }
-
+ 
         var (hash, salt) = _hasher.HashPassword(request.Password);
         var user = new User
         {
@@ -71,21 +70,20 @@ public class AuthController : ControllerBase
         };
         //done
         await _userService.AddUser(user);
-
+ 
         var registerResponse = new RegisterResponse(user.UserId,
          user.Email, user.FullName, role.Name);
-
-
+ 
+ 
         return Created(string.Empty, new ApiResponse<RegisterResponse>
         {
             Success = true,
-            Status = 201,
-            Message = "User created successfully",
+            Code = 201,
             Data = registerResponse
         });
-
+ 
     }
-
+ 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
@@ -100,16 +98,16 @@ public class AuthController : ControllerBase
             return Unauthorized(new ApiResponse<object>
             {
                 Success = false,
-                Status = 401,
-                Message = "Invalid username or password"
+                Code = 401,
+                Error = "Invalid username or password"
             });
         }
-
+ 
         var (accessToken, accessExpires) = _tokenService.GenerateAccessToken(user);
         var (refreshToken, refreshExpires, refreshHash) = _tokenService.GenerateRefreshToken(_jwtSettings.Value.RefreshTokenDays);
-
+ 
         _tokenService.SetTokenCookie(refreshToken, Response, _jwtSettings.Value.RefreshTokenDays);
-
+ 
         var refreshEntity = new UserRefreshToken
         {
             UserId = user.UserId,
@@ -119,56 +117,60 @@ public class AuthController : ControllerBase
         };
         //done
         await _authService.AddUserRefreshToken(refreshEntity);
-
-
+ 
+ 
         var authResponse = new AuthResponse(accessToken, accessExpires);
         return Created(string.Empty, new ApiResponse<AuthResponse>
         {
             Success = true,
-            Status = 201,
-            Message = "User created successfully",
+            Code = 201,
             Data = authResponse
         });
     }
-
+ 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
+    public async Task<IActionResult> Refresh()
     {
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
         }
-
+ 
         var refreshToken = Request.Cookies["refreshToken"];
-
+ 
         if (string.IsNullOrEmpty(refreshToken))
         {
-            return BadRequest("Refresh token not found in cookies.");
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = "Refresh token not found in cookies."
+            });
         }
         var tokenHash = _tokenService.HashToken(refreshToken);
-
+ 
         //done
         var stored = await _authService.GetUserByHashToken(tokenHash);
-
+ 
         if (stored is null || !stored.IsActive || stored.User is null)
         {
             return Unauthorized(new ApiResponse<object>
             {
-                Status = 401,
                 Success = false,
-                Message = "Invalid token."
+                Code = 401,
+                Error = "Invalid token."
             });
         }
-
+ 
         stored.RevokedAt = DateTime.UtcNow;
-
+ 
         var (newAccessToken, newAccessExpires) = _tokenService.GenerateAccessToken(stored.User);
         var (newRefreshToken, newRefreshExpires, newRefreshHash) = _tokenService.GenerateRefreshToken(_jwtSettings.Value.RefreshTokenDays);
-
+ 
         stored.ReplacedByTokenHash = newRefreshHash;
         _tokenService.SetTokenCookie(newRefreshToken, Response, _jwtSettings.Value.RefreshTokenDays);
         //done
-
+ 
         await _authService.AddUserRefreshToken(new UserRefreshToken
         {
             UserId = stored.UserId,
@@ -176,19 +178,18 @@ public class AuthController : ControllerBase
             ExpiresAt = newRefreshExpires,
             CreatedByIp = HttpContext.Connection.RemoteIpAddress?.ToString()
         });
-
-
-
+ 
+ 
+ 
         var authResponse = new AuthResponse(newAccessToken, newAccessExpires);
         return Created(string.Empty, new ApiResponse<AuthResponse>
         {
             Success = true,
-            Status = 201,
-            Message = "Token Refresh Successfully",
+            Code = 201,
             Data = authResponse
         });
     }
-
+ 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
@@ -197,12 +198,17 @@ public class AuthController : ControllerBase
             return ValidationProblem(ModelState);
         }
         var refreshToken = Request.Cookies["refreshToken"];
-
+ 
         if (string.IsNullOrEmpty(refreshToken))
         {
-            return BadRequest("Refresh token not found in cookies.");
+            return BadRequest(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 400,
+                Error = "Refresh token not found in cookies."
+            });
         }
-
+ 
         var tokenHash = _tokenService.HashToken(refreshToken);
         //done
         var stored = await _authService.GetUserByHashToken(tokenHash);
@@ -211,9 +217,8 @@ public class AuthController : ControllerBase
             return NotFound(new ApiResponse<object>
             {
                 Success = false,
-                Status = 400,
-                Message = "Refresh token not found or already revoked.",
-                Data = tokenHash
+                Code = 404,
+                Error = "Refresh token not found or already revoked."
             });
         }
         //done
@@ -222,10 +227,9 @@ public class AuthController : ControllerBase
         return Ok(new ApiResponse<object>
         {
             Success = true,
-            Status = 200,
-            Message = "Refresh token successfully revoked.",
+            Code = 200,
             Data = new { revokedAt = stored.RevokedAt }
         });
-
+ 
     }
 }

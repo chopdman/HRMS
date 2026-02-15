@@ -9,7 +9,7 @@ public class TravelDocumentUploadDto
     [Required]
     public long TravelId { get; set; }
 
-    [Required]
+    // [Required]
     public long? EmployeeId { get; set; }
 
     [Required, MaxLength(200)]
@@ -19,12 +19,21 @@ public class TravelDocumentUploadDto
     public IFormFile File { get; set; } = null!;
 }
 
+public class TravelDocumentUpdateDto
+{
+    [MaxLength(200)]
+    public string? DocumentType { get; set; }
+
+    public IFormFile? File { get; set; }
+}
+
 public record TravelDocumentDto(
     long DocumentId,
     long TravelId,
-    long EmployeeId,
+    long? EmployeeId,
     long UploadedById,
-    DocumentOwnerType OwnerType,
+    string? UploadedByName,
+    string OwnerType,
     string? DocumentType,
     string? FileName,
     string? FilePath,

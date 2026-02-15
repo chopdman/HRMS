@@ -13,8 +13,17 @@ namespace backend.DTO.Travels
         [MaxLength(2000)] string? Purpose,
         [Required] DateTime StartDate,
         [Required] DateTime EndDate,
-        [Required] long CreatedById,
+         long? CreatedById,
         [MinLength(1)] List<TravelAssignmentCreateDto> Assignments
+    );
+
+    public record TravelUpdateDto(
+        [Required, MaxLength(200)] string TravelName,
+        [Required, MaxLength(200)] string Destination,
+        [MaxLength(2000)] string? Purpose,
+        [Required] DateTime StartDate,
+        [Required] DateTime EndDate,
+        List<long>? AssignedEmployeeIds
     );
 
     public record TravelResponseDto(
@@ -41,7 +50,9 @@ namespace backend.DTO.Travels
         long TravelId,
         string TravelName,
         string Destination,
+        string? Purpose,
         DateTime StartDate,
-        DateTime EndDate
+        DateTime EndDate,
+        IReadOnlyCollection<long> AssignedEmployeeIds
     );
 }
