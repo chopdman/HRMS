@@ -177,6 +177,17 @@ public class ExpenseService
             throw new ArgumentException("Only submitted expenses can be reviewed.");
         }
 
+        var travel = await _db.Travels.FirstOrDefaultAsync(t => t.TravelId == expense.TravelId);
+        if (travel is null)
+        {
+            throw new ArgumentException("Travel not found.");
+        }
+
+        if (travel.CreatedBy != reviewerId)
+        {
+            throw new ArgumentException("You can only review expenses for travels you created.");
+        }
+
         if (expense.ReviewedAt.HasValue || expense.ReviewedBy.HasValue)
         {
             throw new ArgumentException("This expense has already been reviewed.");
@@ -283,9 +294,9 @@ public class ExpenseService
         return expenses.Select(Map).ToList();
     }
 
-    public async Task<IReadOnlyCollection<ExpenseResponseDto>> ListForHrAsync(long? employeeId, long? travelId, DateTime? from, DateTime? to, string? status)
+    public async Task<IReadOnlyCollection<ExpenseResponseDto>> ListForHrAsync(long? employeeId, long? travelId, DateTime? from, DateTime? to, string? status, long createdById)
     {
-        var expenses = await _expenses.GetFilteredAsync(employeeId, travelId, from, to, status);
+        var expenses = await _expenses.GetFilteredAsync(employeeId, travelId, from, to, status, createdById);
         return expenses.Select(Map).ToList();
     }
 

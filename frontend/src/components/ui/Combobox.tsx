@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useDebouncedValue } from '../../hooks/useDebouncedValue'
-
+ 
 export type ComboOption = {
   value: number
   label: string
 }
-
+ 
 type SearchableSelectProps = {
   label: string
   options: ComboOption[]
@@ -15,7 +15,7 @@ type SearchableSelectProps = {
   disabled?: boolean
   onChange: (value?: number) => void
 }
-
+ 
 export const SearchableSelect = ({
   label,
   options,
@@ -26,13 +26,26 @@ export const SearchableSelect = ({
   onChange
 }: SearchableSelectProps) => {
   const [query, setQuery] = useState('')
+  const [selectedOverride, setSelectedOverride] = useState('')
+ 
+  useEffect(() => {
+    if (value === undefined) {
+      setSelectedOverride('')
+      return
+    }
+ 
+    const match = options.find((option) => option.value === value)
+    if (match) {
+      setSelectedOverride(match.label)
+    }
+  }, [options, value])
   const filtered = useMemo(() => {
     const lowered = query.toLowerCase()
     return options.filter((option) => option.label.toLowerCase().includes(lowered))
   }, [options, query])
-
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? ''
-
+ 
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? selectedOverride
+ 
   return (
     <label className="block space-y-2 text-sm">
       <span className="font-medium text-slate-700 pr-2">{label}</span>
@@ -59,6 +72,7 @@ export const SearchableSelect = ({
               `}
               onClick={() => {
                 onChange(option.value)
+                setSelectedOverride(option.label)
                 setQuery('')
               }}
             >
@@ -74,7 +88,10 @@ export const SearchableSelect = ({
         <button
           type="button"
           className="text-xs font-semibold  text-slate-500 hover:text-slate-700"
-          onClick={() => onChange(undefined)}
+          onClick={() => {
+            onChange(undefined)
+            setSelectedOverride('')
+          }}
         >
           Clear selection
         </button>
@@ -83,7 +100,7 @@ export const SearchableSelect = ({
     </label>
   )
 }
-
+ 
 type AsyncSelectProps = {
   label: string
   options: ComboOption[]
@@ -95,7 +112,7 @@ type AsyncSelectProps = {
   onChange: (value?: number) => void
   onSearch: (query: string) => void
 }
-
+ 
 export const AsyncSearchableSelect = ({
   label,
   options,
@@ -108,14 +125,27 @@ export const AsyncSearchableSelect = ({
   onSearch
 }: AsyncSelectProps) => {
   const [query, setQuery] = useState('')
+  const [selectedOverride, setSelectedOverride] = useState('')
   const debounced = useDebouncedValue(query, 300)
-
+ 
   useEffect(() => {
     onSearch(debounced.trim())
   }, [debounced, onSearch])
-
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? ''
-
+ 
+  useEffect(() => {
+    if (value === undefined) {
+      setSelectedOverride('')
+      return
+    }
+ 
+    const match = options.find((option) => option.value === value)
+    if (match) {
+      setSelectedOverride(match.label)
+    }
+  }, [options, value])
+ 
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? selectedOverride
+ 
   return (
     <label className="block space-y-2 text-sm">
       <span className="font-medium text-slate-700">{label}</span>
@@ -145,6 +175,7 @@ export const AsyncSearchableSelect = ({
               `}
               onClick={() => {
                 onChange(option.value)
+                setSelectedOverride(option.label)
                 setQuery('')
               }}
             >
@@ -161,7 +192,10 @@ export const AsyncSearchableSelect = ({
         <button
           type="button"
           className="text-xs font-semibold text-slate-500 hover:text-slate-700"
-          onClick={() => onChange(undefined)}
+          onClick={() => {
+            onChange(undefined)
+            setSelectedOverride('')
+          }}
         >
           Clear selection
         </button>
@@ -170,7 +204,7 @@ export const AsyncSearchableSelect = ({
     </label>
   )
 }
-
+ 
 type AsyncMultiSelectProps = {
   label: string
   options: ComboOption[]
@@ -182,7 +216,7 @@ type AsyncMultiSelectProps = {
   onChange: (value: number[]) => void
   onSearch: (query: string) => void
 }
-
+ 
 export const AsyncSearchableMultiSelect = ({
   label,
   options,
@@ -196,11 +230,11 @@ export const AsyncSearchableMultiSelect = ({
 }: AsyncMultiSelectProps) => {
   const [query, setQuery] = useState('')
   const debounced = useDebouncedValue(query, 300)
-
+ 
   useEffect(() => {
     onSearch(debounced.trim())
   }, [debounced, onSearch])
-
+ 
   const toggleValue = (selected: number) => {
     if (value.includes(selected)) {
       onChange(value.filter((item) => item !== selected))
@@ -208,7 +242,7 @@ export const AsyncSearchableMultiSelect = ({
       onChange([...value, selected])
     }
   }
-
+ 
   return (
     <label className="block space-y-2 text-sm">
       <span className="font-medium text-slate-700">{label}</span>
@@ -246,7 +280,7 @@ export const AsyncSearchableMultiSelect = ({
     </label>
   )
 }
-
+ 
 type SearchableMultiSelectProps = {
   label: string
   options: ComboOption[]
@@ -256,7 +290,7 @@ type SearchableMultiSelectProps = {
   disabled?: boolean
   onChange: (value: number[]) => void
 }
-
+ 
 export const SearchableMultiSelect = ({
   label,
   options,
@@ -271,7 +305,7 @@ export const SearchableMultiSelect = ({
     const lowered = query.toLowerCase()
     return options.filter((option) => option.label.toLowerCase().includes(lowered))
   }, [options, query])
-
+ 
   const toggleValue = (selected: number) => {
     if (value.includes(selected)) {
       onChange(value.filter((item) => item !== selected))
@@ -279,7 +313,7 @@ export const SearchableMultiSelect = ({
       onChange([...value, selected])
     }
   }
-
+ 
   return (
     <label className="block space-y-2 text-sm">
       <span className="font-medium text-slate-700">{label}</span>
@@ -317,3 +351,4 @@ export const SearchableMultiSelect = ({
     </label>
   )
 }
+ 

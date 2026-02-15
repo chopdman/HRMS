@@ -1,13 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
-import {
-  AsyncSearchableSelect,
-  SearchableSelect,
-} from "../../components/ui/Combobox";
-import { Input } from "../../components/ui/Input";
 import { Header } from "../../components/Header";
 import { Spinner } from "../../components/ui/Spinner";
 import { useAuth } from "../../hooks/useAuth";
@@ -18,22 +14,26 @@ import {
   useUpdateTravelDocument,
   useUploadTravelDocument,
 } from "../../hooks/travel/useTravelDocumentMutations";
-import { useAssignedTravels } from "../../hooks/travel/useTravel";
+import {
+  useAssignedTravels,
+  useCreatedTravels,
+  useTravelAssignees,
+} from "../../hooks/travel/useTravel";
 import {
   useTravelDocuments,
   type TravelDocumentFilters,
 } from "../../hooks/travel/useTravelDocuments";
-import { formatDate } from "../../utils/format";
-import { Button } from "../../components/ui/Button";
-
-type DocumentFormValues = {
-  travelId: number;
-  employeeId?: number;
-  documentType: string;
-  file: FileList;
-};
+import type { TravelDocument } from "../../types/document";
+import type { DocumentFormValues } from "../../types/travel-document-forms";
+import {
+  TravelDocumentList,
+  type TravelDocumentEdits,
+} from "../../components/travel/TravelDocumentList";
+import { TravelDocumentUploadForm } from "../../components/travel/TravelDocumentUploadForm";
+import { TravelDocumentFiltersPanel } from "../../components/travel/TravelDocumentFiltersPanel";
 
 export const DocumentsPage = () => {
+  const queryClient = useQueryClient();
   const { role, userId } = useAuth();
   const canUpload = role === "HR" || role === "Employee";
   const isHr = role === "HR";
@@ -41,9 +41,7 @@ export const DocumentsPage = () => {
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchParams] = useSearchParams();
-  const [editDocs, setEditDocs] = useState<
-    Record<number, { documentType: string; file: File | null }>
-  >({});
+  const [editDocs, setEditDocs] = useState<TravelDocumentEdits>({});
   const employeesQuery = useEmployeeSearch(
     searchQuery,
     isHr && searchQuery.length >= 2,
@@ -51,25 +49,14 @@ export const DocumentsPage = () => {
   const teamMembersQuery = isManager
     ? useTeamMembers()
     : { isLoading: false, data: [] };
-  const {
-    watch: watchFilters,
-    control: controlFilters,
-    setValue: setFilterValue,
-  } = useForm<TravelDocumentFilters>({
+  const filterForm = useForm<TravelDocumentFilters>({
     defaultValues: {
       travelId: undefined,
       employeeId: undefined,
     },
   });
 
-  const {
-    register: registerForm,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm<DocumentFormValues>({
+  const uploadForm = useForm<DocumentFormValues>({
     defaultValues: {
       travelId: undefined,
       employeeId: undefined,
@@ -77,7 +64,7 @@ export const DocumentsPage = () => {
     },
   });
 
-  const filters = watchFilters();
+  const filters = filterForm.watch();
   const selectedEmployeeId = filters.employeeId
     ? Number(filters.employeeId)
     : undefined;
@@ -86,6 +73,7 @@ export const DocumentsPage = () => {
     selectedEmployeeId,
     canFetchTravels,
   );
+  const createdTravelsQuery = useCreatedTravels(isHr);
   const normalizedFilters = useMemo(
     () => ({
       travelId: filters.travelId ? Number(filters.travelId) : undefined,
@@ -120,8 +108,11 @@ export const DocumentsPage = () => {
     ? employeesQuery.isLoading
     : teamMembersQuery.isLoading;
 
-  const uploadEmployeeId = watch("employeeId")
-    ? Number(watch("employeeId"))
+  const uploadTravelId = uploadForm.watch("travelId")
+    ? Number(uploadForm.watch("travelId"))
+    : undefined;
+  const uploadEmployeeId = uploadForm.watch("employeeId")
+    ? Number(uploadForm.watch("employeeId"))
     : undefined;
   const resolvedUploadEmployeeId = isHr ? uploadEmployeeId : userId;
   const canLoadUploadTravels = Boolean(resolvedUploadEmployeeId);
@@ -129,19 +120,27 @@ export const DocumentsPage = () => {
     resolvedUploadEmployeeId,
     canLoadUploadTravels,
   );
+  const uploadAssigneesQuery = useTravelAssignees(
+    uploadTravelId,
+    isHr && Boolean(uploadTravelId),
+  );
+
+  const uploadEmployeeOptions = isHr
+    ? uploadAssigneesQuery.data ?? []
+    : employeeOptions;
 
   useEffect(() => {
     const travelParam = searchParams.get("travelId");
     const employeeParam = searchParams.get("employeeId");
 
     if (travelParam) {
-      setFilterValue("travelId", Number(travelParam));
+      filterForm.setValue("travelId", Number(travelParam));
     }
 
     if (employeeParam) {
-      setFilterValue("employeeId", Number(employeeParam));
+      filterForm.setValue("employeeId", Number(employeeParam));
     }
-  }, [searchParams, setFilterValue]);
+  }, [filterForm, searchParams]);
 
   const onUpload = async (values: DocumentFormValues) => {
     setMessage("");
@@ -157,9 +156,28 @@ export const DocumentsPage = () => {
       file,
     });
 
-    reset();
+    uploadForm.reset();
+    await queryClient.invalidateQueries({ queryKey: ["travel-documents"] });
     await refetch();
     setMessage("Document uploaded successfully.");
+  };
+
+  const handleStartEdit = (doc: TravelDocument) => {
+    setEditDocs((prev) => ({
+      ...prev,
+      [doc.documentId]: {
+        documentType: doc.documentType ?? "",
+        file: null,
+      },
+    }));
+  };
+
+  const handleCancelEdit = (documentId: number) => {
+    setEditDocs((prev) => {
+      const next = { ...prev };
+      delete next[documentId];
+      return next;
+    });
   };
 
   const handleEditChange = (
@@ -199,11 +217,13 @@ export const DocumentsPage = () => {
       delete next[documentId];
       return next;
     });
+    await queryClient.invalidateQueries({ queryKey: ["travel-documents"] });
     await refetch();
   };
 
   const handleDeleteDoc = async (documentId: number) => {
     await deleteMutation.mutateAsync(documentId);
+    await queryClient.invalidateQueries({ queryKey: ["travel-documents"] });
     await refetch();
   };
 
@@ -215,145 +235,33 @@ export const DocumentsPage = () => {
       />
 
       {canUpload ? (
-        <Card className="space-y-4">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              Upload document
-            </h3>
-            <p className="text-xs text-slate-500">
-              Provide assignment and travel details to upload.
-            </p>
-          </div>
-          <form
-            className="grid gap-4 md:grid-cols-2"
-            onSubmit={handleSubmit(onUpload)}
-          >
-            <input
-              type="hidden"
-              {...registerForm("travelId", {
-                required: "Travel is required.",
-                valueAsNumber: true,
-              })}
-            />
-            {isHr ? (
-              <AsyncSearchableSelect
-                label="Employee (optional)"
-                error={errors.employeeId?.message}
-                options={employeeOptions.map((employee: any) => ({
-                  value: employee.id,
-                  label: `${employee.fullName} (${employee.email})`,
-                }))}
-                value={watch("employeeId")}
-                onChange={(value) => {
-                  setValue("employeeId", value);
-                  setValue("travelId", undefined!);
-                }}
-                onSearch={setSearchQuery}
-                isLoading={listLoading}
-              />
-            ) : null}
-            {resolvedUploadEmployeeId ? (
-              <SearchableSelect
-                label="Travel"
-                options={
-                  uploadTravelsQuery.data?.map((travel: any) => ({
-                    value: travel.travelId,
-                    label: `${travel.travelName} (${formatDate(travel.startDate)} → ${formatDate(travel.endDate)})`,
-                  })) ?? []
-                }
-                value={watch("travelId")}
-                onChange={(value) =>
-                  setValue("travelId", value as number, {
-                    shouldValidate: true,
-                  })
-                }
-                error={errors.travelId?.message}
-                disabled={uploadTravelsQuery.isLoading}
-              />
-            ) : (
-              <Input
-                label="Travel ID"
-                type="number"
-                error={errors.travelId?.message}
-                {...registerForm("travelId", {
-                  required: "Travel ID is required.",
-                  valueAsNumber: true,
-                })}
-              />
-            )}
-            <Input
-              label="Document type"
-              error={errors.documentType?.message}
-              {...registerForm("documentType", {
-                required: "Document type is required.",
-              })}
-            />
-            <Input
-              label="File"
-              type="file"
-              error={errors.file?.message}
-              {...registerForm("file", { required: "File is required." })}
-            />
-            <div className="md:col-span-2">
-              <Button
-                className="inline-flex w-full items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-black hover:bg-brand-700 disabled:opacity-70"
-                type="submit"
-                disabled={uploadMutation.isPending}
-              >
-                {uploadMutation.isPending ? "Uploading..." : "Upload document"}
-              </Button>
-            </div>
-          </form>
-          {message ? (
-            <p className="text-sm text-emerald-600">{message}</p>
-          ) : null}
-        </Card>
+        <TravelDocumentUploadForm
+          form={uploadForm}
+          onSubmit={onUpload}
+          isHr={isHr}
+          employeeOptions={uploadEmployeeOptions}
+          onSearch={setSearchQuery}
+          isLoadingOptions={listLoading}
+          hrTravels={createdTravelsQuery.data}
+          isLoadingHrTravels={createdTravelsQuery.isLoading}
+          uploadTravels={uploadTravelsQuery.data}
+          isLoadingTravels={uploadTravelsQuery.isLoading}
+          resolvedEmployeeId={resolvedUploadEmployeeId}
+          isUploading={uploadMutation.isPending}
+          message={message}
+        />
       ) : null}
 
-      <Card className="space-y-4">
-        <div>
-          <h3 className="text-base font-semibold text-slate-900">
-            Filter documents
-          </h3>
-          <p className="text-xs text-slate-500">
-            Refine results using travel or employee identifiers.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Controller
-            name="employeeId"
-            control={controlFilters}
-            render={({ field }) => (
-              <AsyncSearchableSelect
-                label="Employee"
-                options={employeeOptions.map((employee: any) => ({
-                  value: employee.id,
-                  label: `${employee.fullName} (${employee.email})`,
-                }))}
-                value={field.value}
-                onChange={(value) => {
-                  field.onChange(value);
-                  setFilterValue("travelId", undefined);
-                }}
-                onSearch={setSearchQuery}
-                isLoading={listLoading}
-              />
-            )}
-          />
-          <SearchableSelect
-            label="Travel"
-            options={
-              travelOptionsQuery.data?.map((travel: any) => ({
-                value: travel.travelId,
-                label: `${travel.travelName} (${formatDate(travel.startDate)} → ${formatDate(travel.endDate)})`,
-              })) ?? []
-            }
-            value={filters.travelId}
-            onChange={(value) => setFilterValue("travelId", value)}
-            error={undefined}
-          />
-        </div>
-      </Card>
+      <TravelDocumentFiltersPanel
+        control={filterForm.control}
+        employeeOptions={employeeOptions}
+        onSearch={setSearchQuery}
+        isLoadingOptions={listLoading}
+        travelOptions={travelOptionsQuery.data}
+        selectedTravelId={filters.travelId ? Number(filters.travelId) : undefined}
+        onEmployeeChange={() => filterForm.setValue("travelId", undefined)}
+        onTravelChange={(value) => filterForm.setValue("travelId", value)}
+      />
       {isLoading ? (
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <Spinner /> Loading documents...
@@ -369,124 +277,18 @@ export const DocumentsPage = () => {
       ) : null}
 
       {data?.length ? (
-        <div className="space-y-3">
-          {data.map((doc: any) => (
-            <Card
-              key={doc.documentId}
-              className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
-            >
-              <div>
-                <p className="text-sm font-semibold text-slate-900">
-                  {doc.documentType}
-                </p>
-                <p className="text-xs text-slate-500">{doc.fileName}</p>
-                <p className="text-xs text-slate-500">
-                  Uploaded {formatDate(doc.uploadedAt)}
-                </p>
-                {doc.employeeId ? (
-                  <p className="text-xs text-slate-500">
-                    Employee ID: {doc.employeeId}
-                  </p>
-                ) : (
-                  <p className="text-xs text-slate-500">
-                    Applies to all assigned employees
-                  </p>
-                )}
-                {editDocs[doc.documentId] ? (
-                  <div className="mt-2 grid gap-2 md:grid-cols-2">
-                    <Input
-                      label="Document type"
-                      value={editDocs[doc.documentId].documentType}
-                      onChange={(event) =>
-                        handleEditChange(
-                          doc.documentId,
-                          "documentType",
-                          event.target.value,
-                        )
-                      }
-                    />
-                    <Input
-                      label="Replace file"
-                      type="file"
-                      onChange={(event) =>
-                        handleEditChange(
-                          doc.documentId,
-                          "file",
-                          event.target.files?.item(0) ?? null,
-                        )
-                      }
-                    />
-                  </div>
-                ) : null}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <a
-                  className="text-sm font-semibold text-brand-600 hover:text-brand-700"
-                  href={doc.filePath}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  View file
-                </a>
-                {doc.uploadedById === userId ? (
-                  <>
-                  
-                 { editDocs[doc.documentId] ? (
-                    <>
-                      <button
-                        className="text-sm font-semibold text-emerald-600 hover:text-emerald-700"
-                        type="button"
-                        onClick={() => handleSaveEdit(doc.documentId)}
-                        disabled={updateMutation.isPending}
-                      >
-                        {updateMutation.isPending ? "Saving..." : "Save"}
-                      </button>
-                      <button
-                        className="text-sm font-semibold text-slate-500 hover:text-slate-600"
-                        type="button"
-                        onClick={() =>
-                          setEditDocs((prev) => {
-                            const next = { ...prev };
-                            delete next[doc.documentId];
-                            return next;
-                          })
-                        }
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        className="text-sm font-semibold text-slate-600 hover:text-slate-700"
-                        type="button"
-                        onClick={() =>
-                          setEditDocs((prev) => ({
-                            ...prev,
-                            [doc.documentId]: {
-                              documentType: doc.documentType ?? "",
-                              file: null,
-                            },
-                          }))
-                        }
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-sm font-semibold text-red-600 hover:text-red-700"
-                        type="button"
-                        onClick={() => handleDeleteDoc(doc.documentId)}
-                        disabled={deleteMutation.isPending}
-                      >
-                        Delete
-                      </button>
-                    </>
-                  )
-                 } </>): null}
-              </div>
-            </Card>
-          ))}
-        </div>
+        <TravelDocumentList
+          documents={data}
+          editDocs={editDocs}
+          userId={userId}
+          onEditChange={handleEditChange}
+          onStartEdit={handleStartEdit}
+          onSaveEdit={handleSaveEdit}
+          onCancelEdit={handleCancelEdit}
+          onDelete={handleDeleteDoc}
+          isSaving={updateMutation.isPending}
+          isDeleting={deleteMutation.isPending}
+        />
       ) : null}
 
       {!isLoading && !isError && !data?.length ? (

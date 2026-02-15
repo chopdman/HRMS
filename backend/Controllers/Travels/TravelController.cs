@@ -89,6 +89,16 @@ public class TravelController : ControllerBase
         var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
         var userId = _auth.GetUserId(User);
 
+        if (role == "HR" && userId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+
         var resolvedEmployeeId = role == "Employee" ? userId : employeeId;
         if (resolvedEmployeeId is null)
         {
@@ -100,7 +110,8 @@ public class TravelController : ControllerBase
             });
         }
 
-        var result = await _service.GetAssignmentsForEmployeeAsync(resolvedEmployeeId.Value);
+        var createdById = role == "HR" ? userId : null;
+        var result = await _service.GetAssignmentsForEmployeeAsync(resolvedEmployeeId.Value, createdById);
         return Ok(new ApiResponse<object>
         {
             Success = true,

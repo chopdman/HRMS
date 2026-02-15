@@ -70,9 +70,9 @@ public class TravelService
     //     return await _repository.GetAssignedTravelsAsync(employeeId);
     // }
 
-    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId)
+    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId, long? createdById)
     {
-        return await _repository.GetAssignmentsForEmployeeAsync(employeeId);
+        return await _repository.GetAssignmentsForEmployeeAsync(employeeId, createdById);
     }
 
     public async Task<IReadOnlyCollection<EmployeeLookupDto>> GetAssigneesForTravelAsync(long travelId, long currentUserId)

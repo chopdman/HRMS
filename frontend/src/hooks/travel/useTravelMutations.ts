@@ -21,6 +21,7 @@ export type UpdateTravelPayload = {
   purpose?: string
   startDate: string
   endDate: string
+  assignedEmployeeIds?: number[]
 }
  
 export const useCreateTravel = () =>

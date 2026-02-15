@@ -7,10 +7,10 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
 
 export const Input = ({ label, error, className, ...props }: InputProps) => (
   <label className="block space-y-2 text-sm">
-    <span className="font-medium text-slate-700">{label}</span>
+    <span className="font-medium text-(--color-dark)">{label}</span>
     <input
       className={
-        `w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-200
+        `w-full rounded-md border border-slate-200 bg-(--color-text) px-3 py-2 text-sm text-(--color-dark) shadow-sm focus:border-(--color-primary) focus:outline-none focus:ring-2 focus:ring-(--color-primary)
         ${error && `border-red-400 focus:border-red-400 focus:ring-red-200`}
         ${className}
       `}

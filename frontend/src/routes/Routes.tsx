@@ -11,13 +11,10 @@ import { ExpensesPage } from "../pages/travel/ExpensesPage";
 import { DocumentsPage } from "../pages/travel/DocumentsPage";
 import { NotificationsPage } from "../pages/travel/NotificationsPage";
 import { HrReviewsPage } from "../pages/travel/HrReviewsPage";
-// import { DocumentsPage } from '../pages/documents/DocumentsPage'
-// import { ExpensesPage } from '../pages/expenses/ExpensesPage'
-// import { HrReviewsPage } from '../pages/hr/HrReviewsPage'
-// import { ExpenseConfigPage } from '../pages/hr/ExpenseConfigPage'
-// import { TeamExpensesPage } from '../pages/manager/TeamExpensesPage'
-// import { TeamMembersPage } from '../pages/manager/TeamMembersPage'
-// import { NotificationsPage } from '../pages/notifications/NotificationsPage'
+import { ProfilePage } from "../pages/ProfilePage";
+import { OrgChartPage } from "../pages/OrgChartPage";
+import { ExpenseConfigPage } from "../pages/travel/ExpenseConfigPage";
+import { TeamMembersPage } from "../pages/TeamMembersPage";
 
 export const router = createBrowserRouter([
   {
@@ -84,22 +81,30 @@ export const router = createBrowserRouter([
             </RoleRoute>
           )
         },
-      //   {
-      //     path: 'manager/team-members',
-      //     element: (
-      //       <RoleRoute allowedRoles={['Manager']}>
-      //         <TeamMembersPage />
-      //       </RoleRoute>
-      //     )
-      //   },
-      //   {
-      //     path: 'manager/team-expenses',
-      //     element: (
-      //       <RoleRoute allowedRoles={['Manager']}>
-      //         <TeamExpensesPage />
-      //       </RoleRoute>
-      //     )
-      //   },
+        {
+          path: 'profile',
+          element: (
+            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
+              <ProfilePage />
+            </RoleRoute>
+          )
+        },
+        {
+          path: 'org-chart',
+          element: (
+            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
+              <OrgChartPage />
+            </RoleRoute>
+          )
+        },
+        {
+          path: 'manager/team-members',
+          element: (
+            <RoleRoute allowedRoles={['Manager']}>
+              <TeamMembersPage />
+            </RoleRoute>
+          )
+        },
         {
           path: 'hr/reviews',
           element: (
@@ -108,14 +113,14 @@ export const router = createBrowserRouter([
             </RoleRoute>
           )
         },
-      //   {
-      //     path: 'hr/expense-config',
-      //     element: (
-      //       <RoleRoute allowedRoles={['HR']}>
-      //         <ExpenseConfigPage />
-      //       </RoleRoute>
-      //     )
-      //   }
+        {
+          path: 'hr/expense-config',
+          element: (
+            <RoleRoute allowedRoles={['HR']}>
+              <ExpenseConfigPage />
+            </RoleRoute>
+          )
+        }
     ],
   },
     {

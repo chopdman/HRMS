@@ -5,12 +5,18 @@ import { StatCard } from '../components/ui/StatCard'
 import { useAuth } from '../hooks/useAuth'
 import { useHrExpenses } from '../hooks/travel/useExpenses'
 import { useNotifications } from '../hooks/useNotifications'
+import { useAssignedTravels, useCreatedTravels } from '../hooks/travel/useTravel'
 
 export const DashboardPage = () => {
-  const { role } = useAuth()
+  const { role, userId } = useAuth()
   const isHr = role === 'HR'
+  const isEmployee = role === 'Employee'
   const hrExpenses = useHrExpenses({ status: 'Submitted' }, isHr)
+  const employeeTravels = useAssignedTravels(userId, Boolean(userId) && isEmployee)
+  const hrTravels = useCreatedTravels(isHr)
   const pendingCount = hrExpenses.data?.length ?? 0
+  const employeeTravelCount = employeeTravels.data?.length ?? 0
+  const hrTravelCount = hrTravels.data?.length ?? 0
   const notifications = useNotifications()
   const unreadCount = notifications.data?.filter((item) => !item.isRead).length ?? 0
 
@@ -20,22 +26,45 @@ export const DashboardPage = () => {
         title="Overview"
         description="Monitor travel plans, expense activity, and notifications in one place."
         action={
-          <Link
-            className="inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-            to="/travels"
-          >
-            View travels
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              className="inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+              to="/travels"
+            >
+              View travels
+            </Link>
+            <Link
+              className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:border-brand-200"
+              to="/org-chart"
+            >
+              See organization chart
+            </Link>
+          </div>
         }
       />
 
       <div className="grid gap-4 md:grid-cols-3">
-        {/* <StatCard label="Assigned travels" value="—"  /> */}
-       {isHr && <StatCard
-          label="Expenses awaiting review"
-          value={isHr ? String(pendingCount) : '—'}
-          message={isHr ? 'Submitted expenses pending HR review.' : 'HR visibility only.'}
-        />}
+        {isEmployee ? (
+          <StatCard
+            label="Assigned travels"
+            value={String(employeeTravelCount)}
+            message="Travels assigned to you."
+          />
+        ) : null}
+        {isHr ? (
+          <StatCard
+            label="Created travels"
+            value={String(hrTravelCount)}
+            message="Travels created by you."
+          />
+        ) : null}
+        {isHr ? (
+          <StatCard
+            label="Expenses awaiting review"
+            value={String(pendingCount)}
+            message="Submitted expenses pending HR review."
+          />
+        ) : null}
         <StatCard label="Unread notifications" value={String(unreadCount)}  />
       </div>
 

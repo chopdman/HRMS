@@ -1,48 +1,32 @@
-import { useMemo, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
 import { createSearchParams, useNavigate } from "react-router-dom";
-import {
-  AsyncSearchableMultiSelect,
-  AsyncSearchableSelect,
-} from "../../components/ui/Combobox";
+import { Header } from "../../components/Header";
+import { toDateInputValue } from "../../utils/format";
+import { Spinner } from "../../components/ui/Spinner";
 import { Card } from "../../components/ui/Card";
 import { EmptyState } from "../../components/ui/EmptyState";
-import { Input } from "../../components/ui/Input";
-import { Header } from "../../components/Header";
-import { Spinner } from "../../components/ui/Spinner";
 import { useAuth } from "../../hooks/useAuth";
 import { useEmployeeSearch } from "../../hooks/useEmployeeSearch";
 import { useTeamMembers } from "../../hooks/travel/useManager";
-import { useAssignedTravels } from "../../hooks/travel/useTravel";
+import {
+  useAssignedTravels,
+  useCreatedTravels,
+  useTravelById,
+} from "../../hooks/travel/useTravel";
 import {
   useCreateTravel,
   useDeleteTravel,
   useUpdateTravel,
 } from "../../hooks/travel/useTravelMutations";
-import { formatDate } from "../../utils/format";
-import { Badge } from "../../components/ui/Badge";
-import { Button } from "../../components/ui/Button";
-
-type TravelCreateFormValues = {
-  travelName: string;
-  destination: string;
-  purpose?: string;
-  startDate: string;
-  endDate: string;
-  assignments: number[];
-};
-
-type TravelFilterValues = {
-  employeeId?: number;
-};
-
-type TravelEditFormValues = {
-  travelName: string;
-  destination: string;
-  purpose?: string;
-  startDate: string;
-  endDate: string;
-};
+import { TravelCreateForm } from "../../components/travel/TravelCreateForm";
+import { TravelLookupPanel } from "../../components/travel/TravelLookupPanel";
+import { TravelList } from "../../components/travel/TravelList";
+import type {
+  TravelCreateFormValues,
+  TravelEditFormValues,
+  TravelFilterValues,
+} from "../../types/travel-forms";
 
 export const TravelsPage = () => {
   const { role, userId } = useAuth();
@@ -64,11 +48,16 @@ export const TravelsPage = () => {
     ? Number(selectedEmployeeId)
     : undefined;
   const travelEmployeeId = isEmployee ? userId : normalizedEmployeeId;
-  const canFetch = isEmployee ? Boolean(userId) : Boolean(normalizedEmployeeId);
+  const canFetchAssigned = isEmployee ? Boolean(userId) : Boolean(normalizedEmployeeId);
 
-  const { data, isLoading, isError, refetch } = useAssignedTravels(
+  const assignedTravelsQuery = useAssignedTravels(
     travelEmployeeId,
-    canFetch,
+    canFetchAssigned,
+  );
+  const createdTravelsQuery = useCreatedTravels(isHr);
+  const travelDetailQuery = useTravelById(
+    editingTravelId ?? undefined,
+    Boolean(editingTravelId) && isHr,
   );
   const createTravel = useCreateTravel();
   const updateTravel = useUpdateTravel();
@@ -85,13 +74,15 @@ export const TravelsPage = () => {
     ? employeesQuery.isLoading
     : teamMembersQuery.isLoading;
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors },
-  } = useForm<TravelCreateFormValues>({
+  const activeTravelsQuery = isHr && !normalizedEmployeeId
+    ? createdTravelsQuery
+    : assignedTravelsQuery;
+
+  const travels = activeTravelsQuery.data ?? [];
+  const isTravelsLoading = activeTravelsQuery.isLoading;
+  const isTravelsError = activeTravelsQuery.isError;
+
+  const createForm = useForm<TravelCreateFormValues>({
     defaultValues: {
       travelName: "",
       destination: "",
@@ -102,18 +93,14 @@ export const TravelsPage = () => {
     },
   });
 
-  const {
-    register: registerEdit,
-    handleSubmit: handleSubmitEdit,
-    setValue: setEditValue,
-    reset: resetEdit,
-  } = useForm<TravelEditFormValues>({
+  const editForm = useForm<TravelEditFormValues>({
     defaultValues: {
       travelName: "",
       destination: "",
       purpose: "",
       startDate: "",
       endDate: "",
+      assignments: [],
     },
   });
 
@@ -155,19 +142,48 @@ export const TravelsPage = () => {
       assignments: values.assignments.map((employeeId) => ({ employeeId })),
     });
 
-    reset();
+    createForm.reset();
     setMessage("Travel created successfully.");
   };
 
-  const startEdit = (travelId: number, values: TravelEditFormValues) => {
+  const startEdit = (travelId: number) => {
     setEditMessage("");
     setEditingTravelId(travelId);
-    setEditValue("travelName", values.travelName);
-    setEditValue("destination", values.destination);
-    setEditValue("purpose", values.purpose ?? "");
-    setEditValue("startDate", values.startDate);
-    setEditValue("endDate", values.endDate);
+    editForm.reset({
+      travelName: "",
+      destination: "",
+      purpose: "",
+      startDate: "",
+      endDate: "",
+      assignments: [],
+    });
   };
+
+  useEffect(() => {
+    if (!travelDetailQuery.data || editingTravelId === null) {
+      return;
+    }
+
+    if (travelDetailQuery.data.travelId !== editingTravelId) {
+      return;
+    }
+
+    editForm.setValue("travelName", travelDetailQuery.data.travelName);
+    editForm.setValue("destination", travelDetailQuery.data.destination);
+    editForm.setValue("purpose", travelDetailQuery.data.purpose ?? "");
+    editForm.setValue(
+      "startDate",
+      toDateInputValue(travelDetailQuery.data.startDate),
+    );
+    editForm.setValue(
+      "endDate",
+      toDateInputValue(travelDetailQuery.data.endDate),
+    );
+    editForm.setValue(
+      "assignments",
+      travelDetailQuery.data.assignedEmployeeIds ?? [],
+    );
+  }, [editForm, editingTravelId, travelDetailQuery.data]);
 
   const onUpdateTravel = async (values: TravelEditFormValues) => {
     if (!editingTravelId) {
@@ -181,11 +197,12 @@ export const TravelsPage = () => {
       purpose: values.purpose || undefined,
       startDate: values.startDate,
       endDate: values.endDate,
+      assignedEmployeeIds: values.assignments,
     });
 
     setEditingTravelId(null);
-    resetEdit();
-    await refetch();
+    editForm.reset();
+    await activeTravelsQuery.refetch();
     setEditMessage("Travel updated successfully.");
   };
 
@@ -195,7 +212,7 @@ export const TravelsPage = () => {
     }
 
     await deleteTravel.mutateAsync(travelId);
-    await refetch();
+    await activeTravelsQuery.refetch();
   };
 
   const goToDocuments = (travelId: number) => {
@@ -214,131 +231,33 @@ export const TravelsPage = () => {
       <Header title="Travels" />
 
       {isHr ? (
-        <Card className="space-y-4">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              Create travel plan
-            </h3>
-            <p className="text-xs text-slate-500">
-              Assign employees using the dropdown list.
-            </p>
-          </div>
-          <form
-            className="grid gap-4 md:grid-cols-2"
-            onSubmit={handleSubmit(onCreateTravel)}
-          >
-            <Input
-              label="Travel name"
-              error={errors.travelName?.message}
-              {...register("travelName", {
-                required: "Travel name is required.",
-              })}
-            />
-            <Input
-              label="Destination"
-              error={errors.destination?.message}
-              {...register("destination", {
-                required: "Destination is required.",
-              })}
-            />
-            <Input label="Purpose" {...register("purpose")} />
-            <Controller
-              name="assignments"
-              control={control}
-              rules={{
-                validate: (value) =>
-                  value && value.length > 0
-                    ? true
-                    : "At least one employee must be assigned.",
-              }}
-              render={({ field }) => (
-                <AsyncSearchableMultiSelect
-                  label="Assignments"
-                  options={
-                    Array.isArray(employeeOptions)
-                      ? employeeOptions.map((employee) => ({
-                          value: employee.id,
-                          label: `${employee.fullName} (${employee.email})`,
-                        }))
-                      : []
-                  }
-                  value={field.value ?? []}
-                  onChange={field.onChange}
-                  onSearch={setSearchQuery}
-                  isLoading={listLoading}
-                  error={errors.assignments?.message}
-                />
-              )}
-            />
-            <Input
-              label="Start date"
-              type="date"
-              error={errors.startDate?.message}
-              {...register("startDate", {
-                required: "Start date is required.",
-              })}
-            />
-            <Input
-              label="End date"
-              type="date"
-              error={errors.endDate?.message}
-              {...register("endDate", { required: "End date is required." })}
-            />
-            <div className="md:col-span-2">
-              <Button
-                className="inline-flex w-full items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-black hover:bg-brand-700 disabled:opacity-70"
-                type="submit"
-                disabled={createTravel.isPending}
-              >
-                {createTravel.isPending ? "Creating..." : "Create travel"}
-              </Button>
-            </div>
-          </form>
-          {message ? (
-            <p className="text-sm text-emerald-600">{message}</p>
-          ) : null}
-        </Card>
+        <TravelCreateForm
+          form={createForm}
+          onSubmit={onCreateTravel}
+          employeeOptions={employeeOptions}
+          onSearch={setSearchQuery}
+          isLoadingOptions={listLoading}
+          isSubmitting={createTravel.isPending}
+          message={message}
+        />
       ) : null}
 
-      {!isEmployee  ? (
-        <Card className="space-y-4">
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              Lookup assigned travels
-            </h3>
-            <p className="text-xs text-slate-500">
-              Managers and HR must select an employee.
-            </p>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Controller
-              name="employeeId"
-              control={controlFilter}
-              render={({ field }) => (
-                <AsyncSearchableSelect
-                  label="Employee"
-                  options={employeeOptions.map((employee) => ({
-                    value: employee.id,
-                    label: `${employee.fullName} (${employee.email})`,
-                  }))}
-                  value={field.value}
-                  onChange={field.onChange}
-                  onSearch={setSearchQuery}
-                  isLoading={listLoading}
-                />
-              )}
-            />
-          </div>
-        </Card>
+      {!isEmployee ? (
+        <TravelLookupPanel
+          control={controlFilter}
+          employeeOptions={employeeOptions}
+          onSearch={setSearchQuery}
+          isLoadingOptions={listLoading}
+        />
       ) : null}
 
-      {isLoading ? (
+      {isTravelsLoading ? (
         <div className="flex items-center gap-2 text-sm text-slate-500">
-          <Spinner /> Loading assigned travels...
+          <Spinner /> Loading travels...
         </div>
       ) : null}
 
-      {isError ? (
+      {isTravelsError ? (
         <Card>
           <p className="text-sm text-red-600">
             Unable to load travels right now.
@@ -346,112 +265,36 @@ export const TravelsPage = () => {
         </Card>
       ) : null}
 
-      {data?.length ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {data.map((travel) => (
-            <Card key={travel.travelId} className="space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900">
-                    {travel.travelName}
-                  </h3>
-                  <p className="text-sm text-slate-500">{travel.destination}</p>
-                </div>
-                <Badge tone="info">Assigned</Badge>
-              </div>
-              <div className="text-sm text-slate-600">
-                <span className="font-medium">Dates:</span>{" "}
-                {formatDate(travel.startDate)} → {formatDate(travel.endDate)}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  className="text-sm font-semibold text-brand-600 hover:text-brand-700"
-                  type="button"
-                  onClick={() => goToDocuments(travel.travelId)}
-                >
-                  View documents
-                </button>
-                {isHr ? (
-                  <>
-                    <button
-                      className="text-sm font-semibold text-slate-600 hover:text-slate-700"
-                      type="button"
-                      onClick={() =>
-                        startEdit(travel.travelId, {
-                          travelName: travel.travelName,
-                          destination: travel.destination,
-                          purpose: "",
-                          startDate: travel.startDate,
-                          endDate: travel.endDate,
-                        })
-                      }
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="text-sm font-semibold text-red-600 hover:text-red-700"
-                      type="button"
-                      onClick={() => onDeleteTravel(travel.travelId)}
-                    >
-                      Delete
-                    </button>
-                  </>
-                ) : null}
-              </div>
-              {isHr && editingTravelId === travel.travelId ? (
-                <form
-                  className="grid gap-3"
-                  onSubmit={handleSubmitEdit(onUpdateTravel)}
-                >
-                  <Input
-                    label="Travel name"
-                    {...registerEdit("travelName", { required: true })}
-                  />
-                  <Input
-                    label="Destination"
-                    {...registerEdit("destination", { required: true })}
-                  />
-                  <Input label="Purpose" {...registerEdit("purpose")} />
-                  <Input
-                    label="Start date"
-                    type="date"
-                    {...registerEdit("startDate", { required: true })}
-                  />
-                  <Input
-                    label="End date"
-                    type="date"
-                    {...registerEdit("endDate", { required: true })}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      className="inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-black hover:bg-brand-700 disabled:opacity-70"
-                      type="submit"
-                      disabled={updateTravel.isPending}
-                    >
-                      {updateTravel.isPending ? "Saving..." : "Save changes"}
-                    </button>
-                    <button
-                      className="inline-flex items-center justify-center rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                      type="button"
-                      onClick={() => setEditingTravelId(null)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : null}
-            </Card>
-          ))}
-        </div>
+      {travels.length ? (
+        <TravelList
+          travels={travels}
+          isHr={isHr}
+          badgeLabel={isHr && !normalizedEmployeeId ? "Created" : "Assigned"}
+          editingTravelId={editingTravelId}
+          editForm={editForm}
+          onEditStart={startEdit}
+          onUpdate={onUpdateTravel}
+          onDelete={onDeleteTravel}
+          onCancelEdit={() => setEditingTravelId(null)}
+          onViewDocuments={goToDocuments}
+          isUpdating={updateTravel.isPending}
+          employeeOptions={employeeOptions}
+          onSearch={setSearchQuery}
+          isLoadingOptions={listLoading}
+        />
       ) : null}
 
-      {!isLoading && !isError && !data?.length ? (
+      {!isTravelsLoading && !isTravelsError && !travels.length ? (
         <EmptyState
           title="No travel plans yet"
           description={
-            canFetch
-              ? "Assigned travels will appear here once HR creates and assigns a plan."
-              : "Enter an employee ID to view assigned travel plans."
+            isHr
+              ? normalizedEmployeeId
+                ? "Assigned travels will appear here once you create and assign a plan to this employee."
+                : "Created travels will appear here once you add a travel plan."
+              : canFetchAssigned
+                ? "Assigned travels will appear here once HR creates and assigns a plan."
+                : "Select an employee to view assigned travel plans."
           }
         />
       ) : null}

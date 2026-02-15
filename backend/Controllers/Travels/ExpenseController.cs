@@ -4,23 +4,23 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using backend.Services.Common;
 using backend.DTO.Common;
- 
+
 namespace backend.Controllers.Travels;
- 
+
 [ApiController]
 [Route("api/v1/expenses")]
 public class ExpenseController : ControllerBase
 {
     private readonly ExpenseService _service;
- 
+
     private readonly AuthService _auth;
- 
+
     public ExpenseController(ExpenseService service, AuthService auth)
     {
         _service = service;
         _auth = auth;
     }
- 
+
     [Authorize(Roles = "Employee")]
     [HttpPost]
     public async Task<IActionResult> CreateDraft([FromBody] ExpenseCreateDto dto)
@@ -29,7 +29,7 @@ public class ExpenseController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
- 
+
         var userId = _auth.GetUserId(User);
         if (userId is null)
         {
@@ -40,7 +40,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         try
         {
             var result = await _service.CreateDraftAsync(dto, userId.Value);
@@ -61,7 +61,7 @@ public class ExpenseController : ControllerBase
             });
         }
     }
- 
+
     [Authorize(Roles = "Employee")]
     [HttpPost("{expenseId:int}/proofs")]
     [RequestSizeLimit(20_000_000)]
@@ -71,7 +71,7 @@ public class ExpenseController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
- 
+
         var userId = _auth.GetUserId(User);
         if (userId is null)
         {
@@ -82,7 +82,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         try
         {
             await _service.UploadProofAsync(expenseId, dto, userId.Value);
@@ -102,7 +102,7 @@ public class ExpenseController : ControllerBase
             });
         }
     }
- 
+
     [Authorize(Roles = "Employee")]
     [HttpPost("{expenseId:int}/submit")]
     public async Task<IActionResult> Submit(long expenseId)
@@ -117,7 +117,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         try
         {
             var result = await _service.SubmitAsync(expenseId, userId.Value);
@@ -138,7 +138,7 @@ public class ExpenseController : ControllerBase
             });
         }
     }
- 
+
     [Authorize(Roles = "HR")]
     [HttpPost("{expenseId:int}/review")]
     public async Task<IActionResult> Review(long expenseId, [FromBody] ExpenseReviewDto dto)
@@ -147,7 +147,7 @@ public class ExpenseController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
- 
+
         var reviewerId = _auth.GetUserId(User);
         if (reviewerId is null)
         {
@@ -158,7 +158,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         try
         {
             var result = await _service.ReviewAsync(expenseId, dto, reviewerId.Value);
@@ -179,7 +179,7 @@ public class ExpenseController : ControllerBase
             });
         }
     }
- 
+
     [Authorize(Roles = "Employee")]
     [HttpPut("{expenseId:int}")]
     public async Task<IActionResult> UpdateDraft(long expenseId, [FromBody] ExpenseUpdateDto dto)
@@ -188,7 +188,7 @@ public class ExpenseController : ControllerBase
         {
             return ValidationProblem(ModelState);
         }
- 
+
         var userId = _auth.GetUserId(User);
         if (userId is null)
         {
@@ -199,7 +199,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         try
         {
             var result = await _service.UpdateDraftAsync(expenseId, dto, userId.Value);
@@ -220,7 +220,7 @@ public class ExpenseController : ControllerBase
             });
         }
     }
- 
+
     [Authorize(Roles = "Employee")]
     [HttpDelete("{expenseId:int}")]
     public async Task<IActionResult> DeleteDraft(long expenseId)
@@ -235,7 +235,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         try
         {
             await _service.DeleteDraftAsync(expenseId, userId.Value);
@@ -255,7 +255,7 @@ public class ExpenseController : ControllerBase
             });
         }
     }
- 
+
     [Authorize(Roles = "Employee")]
     [HttpDelete("{expenseId:int}/proofs/{proofId:int}")]
     public async Task<IActionResult> DeleteProof(long expenseId, long proofId)
@@ -270,7 +270,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         try
         {
             await _service.DeleteProofAsync(expenseId, proofId, userId.Value);
@@ -290,7 +290,7 @@ public class ExpenseController : ControllerBase
             });
         }
     }
- 
+
     [Authorize(Roles = "Employee")]
     [HttpGet("my")]
     public async Task<IActionResult> MyExpenses()
@@ -305,7 +305,7 @@ public class ExpenseController : ControllerBase
                 Error = "Invalid token, user not found."
             });
         }
- 
+
         var result = await _service.ListForEmployeeAsync(userId.Value);
         return Ok(new ApiResponse<object>
         {
@@ -314,12 +314,23 @@ public class ExpenseController : ControllerBase
             Data = result
         });
     }
- 
+
     [Authorize(Roles = "HR")]
     [HttpGet]
     public async Task<IActionResult> List([FromQuery] long? employeeId, [FromQuery] long? travelId, [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] string? status)
     {
-        var result = await _service.ListForHrAsync(employeeId, travelId, from, to, status);
+        var currentUserId = _auth.GetUserId(User);
+        if (currentUserId is null)
+        {
+            return Unauthorized(new ApiResponse<object>
+            {
+                Success = false,
+                Code = 401,
+                Error = "Invalid token, user not found."
+            });
+        }
+
+        var result = await _service.ListForHrAsync(employeeId, travelId, from, to, status, currentUserId.Value);
         return Ok(new ApiResponse<object>
         {
             Success = true,
@@ -328,4 +339,3 @@ public class ExpenseController : ControllerBase
         });
     }
 }
- 

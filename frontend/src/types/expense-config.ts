@@ -4,11 +4,3 @@ export type ExpenseCategory = {
   maxAmountPerDay: number
 }
 
-export type ExpenseRule = {
-  ruleId: number
-  ruleKey: string
-  ruleValue: string
-  scopeType: string
-  categoryId?: number | null
-  isActive: boolean
-}

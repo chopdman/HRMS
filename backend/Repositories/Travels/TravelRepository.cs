@@ -63,12 +63,20 @@ public class TravelRepository : ITravelRepository
     //         .ToListAsync();
     // }
 
-    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId)
+    public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId, long? createdById)
     {
-        return await _db.TravelAssignments
+        var query = _db.TravelAssignments
             .Where(a => a.EmployeeId == employeeId)
             .Include(a => a.Travel)
             .ThenInclude(t => t.Assignments)
+            .AsQueryable();
+
+        if (createdById.HasValue)
+        {
+            query = query.Where(a => a.Travel != null && a.Travel.CreatedBy == createdById.Value);
+        }
+
+        return await query
             .Select(a => new TravelAssignmentDto(
                 a.AssignmentId,
                 a.Travel!.TravelId,

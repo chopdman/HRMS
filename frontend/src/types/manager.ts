@@ -6,13 +6,3 @@ export type TeamMember = {
   designation?: string | null
 }
 
-export type TeamExpense = {
-  expenseId: number
-  employeeId: number
-  travelId: number
-  categoryId: number
-  amount: number
-  currency: string
-  expenseDate: string
-  status: string
-}

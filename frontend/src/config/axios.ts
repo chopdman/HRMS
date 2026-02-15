@@ -31,9 +31,6 @@ const persistTokens = (tokens: AuthTokens | null) => {
 
 export const apiClient = axios.create({
   baseURL: apiBaseUrl,
-  headers: {
-    'Content-Type': 'application/json'
-  },
   withCredentials:true
 })
 

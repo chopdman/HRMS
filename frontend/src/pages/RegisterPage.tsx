@@ -73,8 +73,8 @@ export const RegisterPage = () => {
               {...register('email', {
                 required: 'Email is required.',
                 pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: 'Enter a valid email address.'
+                  value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
+                  message: 'Use a valid lowercase email address.'
                 }
               })}
             />
