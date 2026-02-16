@@ -27,6 +27,25 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "games",
+                columns: table => new
+                {
+                    pk_game_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    game_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    operating_hours_start = table.Column<TimeSpan>(type: "time", nullable: false),
+                    operating_hours_end = table.Column<TimeSpan>(type: "time", nullable: false),
+                    slot_duration_minutes = table.Column<int>(type: "int", nullable: false),
+                    max_players_per_slot = table.Column<int>(type: "int", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_games", x => x.pk_game_id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "roles",
                 columns: table => new
                 {
@@ -38,6 +57,30 @@ namespace backend.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_roles", x => x.RoleId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "game_slots",
+                columns: table => new
+                {
+                    pk_slot_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_game_id = table.Column<long>(type: "bigint", nullable: false),
+                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_slots", x => x.pk_slot_id);
+                    table.ForeignKey(
+                        name: "FK_game_slots_games_fk_game_id",
+                        column: x => x.fk_game_id,
+                        principalTable: "games",
+                        principalColumn: "pk_game_id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -76,6 +119,104 @@ namespace backend.Migrations
                     table.ForeignKey(
                         name: "FK_users_users_fk_manager_id",
                         column: x => x.fk_manager_id,
+                        principalTable: "users",
+                        principalColumn: "pk_user_id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "game_bookings",
+                columns: table => new
+                {
+                    pk_booking_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_game_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_slot_id = table.Column<long>(type: "bigint", nullable: false),
+                    booking_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    slot_start_time = table.Column<TimeSpan>(type: "time", nullable: false),
+                    slot_end_time = table.Column<TimeSpan>(type: "time", nullable: false),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    fk_created_by = table.Column<long>(type: "bigint", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    cancelled_at = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_bookings", x => x.pk_booking_id);
+                    table.ForeignKey(
+                        name: "FK_game_bookings_game_slots_fk_slot_id",
+                        column: x => x.fk_slot_id,
+                        principalTable: "game_slots",
+                        principalColumn: "pk_slot_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_game_bookings_games_fk_game_id",
+                        column: x => x.fk_game_id,
+                        principalTable: "games",
+                        principalColumn: "pk_game_id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_game_bookings_users_fk_created_by",
+                        column: x => x.fk_created_by,
+                        principalTable: "users",
+                        principalColumn: "pk_user_id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "game_history",
+                columns: table => new
+                {
+                    pk_stat_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_user_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_game_id = table.Column<long>(type: "bigint", nullable: false),
+                    cycle_start_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    cycle_end_date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    slots_played = table.Column<int>(type: "int", nullable: false),
+                    last_played_date = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_history", x => x.pk_stat_id);
+                    table.ForeignKey(
+                        name: "FK_game_history_games_fk_game_id",
+                        column: x => x.fk_game_id,
+                        principalTable: "games",
+                        principalColumn: "pk_game_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_game_history_users_fk_user_id",
+                        column: x => x.fk_user_id,
+                        principalTable: "users",
+                        principalColumn: "pk_user_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "game_slot_requests",
+                columns: table => new
+                {
+                    pk_request_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_slot_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_requested_by = table.Column<long>(type: "bigint", nullable: false),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    requested_at = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    updated_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_slot_requests", x => x.pk_request_id);
+                    table.ForeignKey(
+                        name: "FK_game_slot_requests_game_slots_fk_slot_id",
+                        column: x => x.fk_slot_id,
+                        principalTable: "game_slots",
+                        principalColumn: "pk_slot_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_game_slot_requests_users_fk_requested_by",
+                        column: x => x.fk_requested_by,
                         principalTable: "users",
                         principalColumn: "pk_user_id",
                         onDelete: ReferentialAction.Restrict);
@@ -131,6 +272,34 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "user_game_interests",
+                columns: table => new
+                {
+                    pk_interest_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_user_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_game_id = table.Column<long>(type: "bigint", nullable: false),
+                    is_interested = table.Column<bool>(type: "bit", nullable: false),
+                    registered_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_game_interests", x => x.pk_interest_id);
+                    table.ForeignKey(
+                        name: "FK_user_game_interests_games_fk_game_id",
+                        column: x => x.fk_game_id,
+                        principalTable: "games",
+                        principalColumn: "pk_game_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_user_game_interests_users_fk_user_id",
+                        column: x => x.fk_user_id,
+                        principalTable: "users",
+                        principalColumn: "pk_user_id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "user_refresh_tokens",
                 columns: table => new
                 {
@@ -156,6 +325,59 @@ namespace backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "game_booking_participants",
+                columns: table => new
+                {
+                    pk_participant_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_booking_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_user_id = table.Column<long>(type: "bigint", nullable: false),
+                    joined_at = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_booking_participants", x => x.pk_participant_id);
+                    table.ForeignKey(
+                        name: "FK_game_booking_participants_game_bookings_fk_booking_id",
+                        column: x => x.fk_booking_id,
+                        principalTable: "game_bookings",
+                        principalColumn: "pk_booking_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_game_booking_participants_users_fk_user_id",
+                        column: x => x.fk_user_id,
+                        principalTable: "users",
+                        principalColumn: "pk_user_id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "game_slot_request_participants",
+                columns: table => new
+                {
+                    pk_request_participant_id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    fk_request_id = table.Column<long>(type: "bigint", nullable: false),
+                    fk_user_id = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_game_slot_request_participants", x => x.pk_request_participant_id);
+                    table.ForeignKey(
+                        name: "FK_game_slot_request_participants_game_slot_requests_fk_request_id",
+                        column: x => x.fk_request_id,
+                        principalTable: "game_slot_requests",
+                        principalColumn: "pk_request_id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_game_slot_request_participants_users_fk_user_id",
+                        column: x => x.fk_user_id,
+                        principalTable: "users",
+                        principalColumn: "pk_user_id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "expenses",
                 columns: table => new
                 {
@@ -168,7 +390,7 @@ namespace backend.Migrations
                     currency = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     expense_date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    status = table.Column<int>(type: "int", nullable: false),
+                    status = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     submitted_at = table.Column<DateTime>(type: "datetime2", nullable: true),
                     reviewed_by = table.Column<long>(type: "bigint", nullable: true),
                     reviewed_at = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -279,7 +501,7 @@ namespace backend.Migrations
                     fk_expense_id = table.Column<long>(type: "bigint", nullable: false),
                     file_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
                     file_path = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    file_type = table.Column<int>(type: "int", maxLength: 50, nullable: true),
+                    file_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     uploaded_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
@@ -317,6 +539,73 @@ namespace backend.Migrations
                 name: "IX_expenses_reviewed_by",
                 table: "expenses",
                 column: "reviewed_by");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_booking_participants_fk_booking_id",
+                table: "game_booking_participants",
+                column: "fk_booking_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_booking_participants_fk_user_id",
+                table: "game_booking_participants",
+                column: "fk_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_bookings_fk_created_by",
+                table: "game_bookings",
+                column: "fk_created_by");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_bookings_fk_game_id",
+                table: "game_bookings",
+                column: "fk_game_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_bookings_fk_slot_id",
+                table: "game_bookings",
+                column: "fk_slot_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_history_fk_game_id",
+                table: "game_history",
+                column: "fk_game_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_history_fk_user_id_fk_game_id_cycle_start_date_cycle_end_date",
+                table: "game_history",
+                columns: new[] { "fk_user_id", "fk_game_id", "cycle_start_date", "cycle_end_date" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_slot_request_participants_fk_request_id",
+                table: "game_slot_request_participants",
+                column: "fk_request_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_slot_request_participants_fk_user_id",
+                table: "game_slot_request_participants",
+                column: "fk_user_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_slot_requests_fk_requested_by",
+                table: "game_slot_requests",
+                column: "fk_requested_by");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_slot_requests_fk_slot_id",
+                table: "game_slot_requests",
+                column: "fk_slot_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_game_slots_fk_game_id",
+                table: "game_slots",
+                column: "fk_game_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_games_game_name",
+                table: "games",
+                column: "game_name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_notifications_fk_user_id",
@@ -360,6 +649,17 @@ namespace backend.Migrations
                 column: "fk_created_by");
 
             migrationBuilder.CreateIndex(
+                name: "IX_user_game_interests_fk_game_id",
+                table: "user_game_interests",
+                column: "fk_game_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_user_game_interests_fk_user_id_fk_game_id",
+                table: "user_game_interests",
+                columns: new[] { "fk_user_id", "fk_game_id" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_user_refresh_tokens_TokenHash",
                 table: "user_refresh_tokens",
                 column: "TokenHash",
@@ -394,6 +694,15 @@ namespace backend.Migrations
                 name: "expense_proofs");
 
             migrationBuilder.DropTable(
+                name: "game_booking_participants");
+
+            migrationBuilder.DropTable(
+                name: "game_history");
+
+            migrationBuilder.DropTable(
+                name: "game_slot_request_participants");
+
+            migrationBuilder.DropTable(
                 name: "notifications");
 
             migrationBuilder.DropTable(
@@ -403,10 +712,19 @@ namespace backend.Migrations
                 name: "travel_documents");
 
             migrationBuilder.DropTable(
+                name: "user_game_interests");
+
+            migrationBuilder.DropTable(
                 name: "user_refresh_tokens");
 
             migrationBuilder.DropTable(
                 name: "expenses");
+
+            migrationBuilder.DropTable(
+                name: "game_bookings");
+
+            migrationBuilder.DropTable(
+                name: "game_slot_requests");
 
             migrationBuilder.DropTable(
                 name: "expense_categories");
@@ -415,7 +733,13 @@ namespace backend.Migrations
                 name: "travels");
 
             migrationBuilder.DropTable(
+                name: "game_slots");
+
+            migrationBuilder.DropTable(
                 name: "users");
+
+            migrationBuilder.DropTable(
+                name: "games");
 
             migrationBuilder.DropTable(
                 name: "roles");

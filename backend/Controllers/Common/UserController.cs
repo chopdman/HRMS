@@ -176,7 +176,7 @@ public class UsersController : ControllerBase
 
     [Authorize]
     [HttpPost("me/avatar")]
-    public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
+    public async Task<IActionResult> UploadAvatar( IFormFile file)
     {
         if (file is null)
         {

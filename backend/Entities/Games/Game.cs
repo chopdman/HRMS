@@ -33,7 +33,11 @@ namespace backend.Entities.Games
         [Column("updated_at")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
- 
+        public ICollection<GameSlot> Slots { get; set; } = new List<GameSlot>();
+
+        public ICollection<GameBooking> Bookings { get; set; } = new List<GameBooking>();
+
+        public ICollection<GameHistory> Histories { get; set; } = new List<GameHistory>();
     }
 
 }
