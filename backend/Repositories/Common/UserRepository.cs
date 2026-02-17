@@ -155,7 +155,7 @@ namespace backend.Repositories.Common
         {
             return await _db.Users.Where(u=> u.RoleId == roleId).ToListAsync();
         }
-        public async Task<Dictionary<long,string?>> GetUsersNamesByIdsAsync(IReadOnlyCollection<long> userIds)
+        public async Task<Dictionary<long,string>> GetUsersNamesByIdsAsync(IReadOnlyCollection<long> userIds)
         {
             return await _db.Users.Where(u=> userIds.Contains(u.UserId)).Select(u=> new {u.UserId,u.FullName}).ToDictionaryAsync(u=> u.UserId,u=> u.FullName);
         }
