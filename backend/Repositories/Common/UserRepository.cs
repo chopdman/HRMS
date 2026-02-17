@@ -123,24 +123,52 @@ namespace backend.Repositories.Common
 
         public async Task<object> SearchEmployeeAsync(string trimmed)
         {
-            return  _db.Users
-     .Join(
-         _db.Roles,
-         u => EF.Property<long?>(u, "RoleId")!,
-         r => EF.Property<long?>(r, "RoleId")!,
-         (u, r) => new { User = u, Role = r }
-     )
-     .Where(ti => ti.Role != null && ti.Role.Name == "Employee")
-  .Where(ti => ti.User.FullName.ToLower().Contains(trimmed.ToLower()) ||
-             ti.User.Email.ToLower().Contains(trimmed.ToLower()))
-     .OrderBy(ti => ti.User.FullName)
-     .Select(ti => new EmployeeLookupDto(ti.User.UserId, ti.User.FullName, ti.User.Email))
-     .ToList();
+            return _db.Users.Join(
+            _db.Roles,
+            u => EF.Property<long?>(u, "RoleId")!,
+            r => EF.Property<long?>(r, "RoleId")!,
+            (u, r) => new { User = u, Role = r }
+            )
+            .Where(ti => ti.Role != null && ti.Role.Name == "Employee")
+            .Where(ti => ti.User.FullName.ToLower().Contains(trimmed.ToLower()) ||
+                ti.User.Email.ToLower().Contains(trimmed.ToLower()))
+            .OrderBy(ti => ti.User.FullName)
+            .Select(ti => new EmployeeLookupDto(ti.User.UserId, ti.User.FullName, ti.User.Email))
+             .ToList();
         }
 
         public async Task SaveAsync()
         {
             await _db.SaveChangesAsync();
         }
+
+        public async Task<IReadOnlyCollection<long>> GetExistingUserIdsAsync(IReadOnlyCollection<long> userIds)
+        {
+            return await _db.Users.Where(u => userIds.Contains(u.UserId)).Select(u => u.UserId).ToListAsync();
+        }
+
+        public async Task<IReadOnlyCollection<User>> GetUsersByIdsAsync(IReadOnlyCollection<long> userIds)
+        {
+            return await _db.Users.Where(u => userIds.Contains(u.UserId)).ToListAsync();
+        }
+        public async Task<IReadOnlyCollection<User>> GetUsersByRoleIdAsync(long roleId)
+        {
+            return await _db.Users.Where(u=> u.RoleId == roleId).ToListAsync();
+        }
+        public async Task<Dictionary<long,string?>> GetUsersNamesByIdsAsync(IReadOnlyCollection<long> userIds)
+        {
+            return await _db.Users.Where(u=> userIds.Contains(u.UserId)).Select(u=> new {u.UserId,u.FullName}).ToDictionaryAsync(u=> u.UserId,u=> u.FullName);
+        }
+
+        public async Task<string?> GetUserFullNameAsync(long userId)
+        {
+            return await _db.Users.Where(u => u.UserId == userId).Select(u => u.FullName).FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> IsTeamMemberAsync(long managerId,long employeeId)
+        {
+            return await _db.Users.AnyAsync(u => u.UserId == employeeId && u.ManagerId == managerId);
+        }
+
     }
 }

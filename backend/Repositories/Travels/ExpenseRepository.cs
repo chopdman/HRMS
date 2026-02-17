@@ -80,6 +80,17 @@ public class ExpenseRepository : IExpenseRepository
             .ToListAsync();
     }
 
+    public async Task<decimal> GetTotalClaimedAmountAsync(long travelId)
+    {
+        return await _db.Expenses.Where(e=> e.TravelId == travelId).Select(e => e.Amount).DefaultIfEmpty(0).SumAsync();
+    }
+
+    public async Task DeleteAsync(Expense expense)
+    {
+        _db.Expenses.Remove(expense);
+        await _db.SaveChangesAsync();
+    }
+
     public async Task SaveAsync()
     {
         await _db.SaveChangesAsync();

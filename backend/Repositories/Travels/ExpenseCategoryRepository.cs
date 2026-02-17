@@ -26,4 +26,14 @@ public class ExpenseCategoryRepository : IExpenseCategoryRepository
             .OrderBy(c => c.CategoryName)
             .ToListAsync();
     }
+
+    public async Task<bool> CategoryExistsAsync(string categoryName)
+    {
+        return await _db.ExpenseCategories.AnyAsync(c=> c.CategoryName == categoryName);
+    }
+
+    public async Task<decimal?> GetMaxAmountPerDayAsync(long categoryId)
+    {
+        return await _db.ExpenseCategories.Where(c=> c.CategoryId == categoryId).Select(c => c.MaxAmountPerDay).FirstOrDefaultAsync();
+    }
 }

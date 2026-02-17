@@ -2,6 +2,7 @@ using backend.Data;
 using backend.Entities.Travels;
 using backend.DTO.Travels;
 using Microsoft.EntityFrameworkCore;
+using backend.DTO.Common;
 
 namespace backend.Repositories.Travels;
 
@@ -47,21 +48,6 @@ public class TravelRepository : ITravelRepository
             travel.CreatedBy,
             travel.Assignments.Select(a => a.EmployeeId).ToList());
     }
-
-    // public async Task<IReadOnlyCollection<TravelAssignedDto>> GetAssignedTravelsAsync(long employeeId)
-    // {
-    //     return await _db.TravelAssignments
-    //         .Where(a => a.EmployeeId == employeeId)
-    //         .Include(a => a.Travel)
-    //         .Select(a => new TravelAssignedDto(
-    //             a.Travel!.TravelId,
-    //             a.Travel.TravelName!,
-    //             a.Travel.Destination!,
-    //             a.Travel.StartDate,
-    //             a.Travel.EndDate
-    //         ))
-    //         .ToListAsync();
-    // }
 
     public async Task<IReadOnlyCollection<TravelAssignmentDto>> GetAssignmentsForEmployeeAsync(long employeeId, long? createdById)
     {
@@ -127,4 +113,92 @@ public class TravelRepository : ITravelRepository
         _db.Travels.Remove(travel);
         await _db.SaveChangesAsync();
     }
+
+    public async Task<TravelAssignment?> GetAssignmentWithTravelAsync(long assignmentId)
+    {
+        return await _db.TravelAssignments
+            .Include(a => a.Travel)
+            .FirstOrDefaultAsync(a => a.AssignmentId == assignmentId);
+    }
+ 
+    public async Task<bool> TravelExistsAsync(long travelId)
+    {
+        return await _db.Travels.AnyAsync(t => t.TravelId == travelId);
+    }
+ 
+    public async Task<bool> IsEmployeeAssignedAsync(long travelId, long employeeId)
+    {
+        return await _db.TravelAssignments
+            .AnyAsync(a => a.TravelId == travelId && a.EmployeeId == employeeId);
+    }
+ 
+    public async Task<IReadOnlyCollection<long>> GetAssignedTravelIdsForEmployeeAsync(long employeeId)
+    {
+        return await _db.TravelAssignments
+            .Where(a => a.EmployeeId == employeeId)
+            .Select(a => a.TravelId)
+            .ToListAsync();
+    }
+ 
+    public async Task<IReadOnlyCollection<long>> GetAssignedEmployeeIdsAsync(long travelId)
+    {
+        return await _db.TravelAssignments
+            .Where(a => a.TravelId == travelId)
+            .Select(a => a.EmployeeId)
+            .ToListAsync();
+    }
+ 
+    public async Task UpdateAssignmentsAsync(long travelId, IReadOnlyCollection<long> employeeIds)
+    {
+        var existingAssignments = await _db.TravelAssignments
+            .Where(a => a.TravelId == travelId)
+            .ToListAsync();
+ 
+        var existingEmployeeIds = existingAssignments
+            .Select(a => a.EmployeeId)
+            .ToHashSet();
+        var incomingEmployeeIds = employeeIds.ToHashSet();
+ 
+        var assignmentsToRemove = existingAssignments
+            .Where(a => !incomingEmployeeIds.Contains(a.EmployeeId))
+            .ToList();
+        if (assignmentsToRemove.Count > 0)
+        {
+            _db.TravelAssignments.RemoveRange(assignmentsToRemove);
+        }
+ 
+        var assignmentsToAdd = employeeIds
+            .Where(employeeId => !existingEmployeeIds.Contains(employeeId))
+            .ToList();
+ 
+        if (assignmentsToAdd.Count > 0)
+        {
+            foreach (var employeeId in assignmentsToAdd)
+            {
+                _db.TravelAssignments.Add(new TravelAssignment
+                {
+                    TravelId = travelId,
+                    EmployeeId = employeeId
+                });
+            }
+        }
+    }
+ 
+    public async Task<IReadOnlyCollection<EmployeeLookupDto>> GetAssigneesForTravelAsync(long travelId)
+    {
+        return await _db.TravelAssignments
+            .Where(a => a.TravelId == travelId)
+            .Join(
+                _db.Users,
+                assignment => assignment.EmployeeId,
+                user => user.UserId,
+                (_, user) => new EmployeeLookupDto(
+                    user.UserId,
+                    user.FullName,
+                    user.Email
+                )
+            )
+            .ToListAsync();
+    }
+ 
 }
