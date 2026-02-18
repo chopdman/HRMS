@@ -82,7 +82,7 @@ export const TravelsPage = () => {
   const isTravelsLoading = activeTravelsQuery.isLoading;
   const isTravelsError = activeTravelsQuery.isError;
 
-  const editTotalClaimedAmount = travelDetailQuery.data?.totalClaimedAmount ?? null;
+  // const editTotalClaimedAmount = travelDetailQuery.data?.totalClaimedAmount ?? null;
 
   const createForm = useForm<TravelCreateFormValues>({
     defaultValues: {
@@ -109,7 +109,7 @@ export const TravelsPage = () => {
   const employeeOptions = isHr
     ? employeesQuery.data ?? []
     : isManager
-      ? (teamMembersQuery.data ?? []).map((member) => ({
+      ? (teamMembersQuery.data ?? []).map((member:any) => ({
           id: member.id,
           fullName: member.fullName,
           email: member.email,
@@ -203,7 +203,7 @@ export const TravelsPage = () => {
   };
 
   const onDeleteTravel = async (travelId: number) => {
-    if (!globalThis.confirm("Delete this travel plan? This cannot be undone.")) {
+    if (!globalThis.confirm("Delete this travel plan?")) {
       return;
     }
 

@@ -7,7 +7,8 @@ import { Button } from '../components/ui/Button'
 import { Spinner } from '../components/ui/Spinner'
 import { EmptyState } from '../components/ui/EmptyState'
 import { useAuth } from '../hooks/useAuth'
-import { useOrgChart, useOrgChartSearch } from '../hooks/useOrgChart'
+import { useOrgChart } from '../hooks/useOrgChart'
+import {useEmployeeSearch} from "../hooks/useEmployeeSearch"
 import { useDebouncedValue } from '../hooks/useDebouncedValue'
 import type { OrgChartNode, OrgChartUser } from '../types/org-chart'
 
@@ -81,7 +82,7 @@ export const OrgChartPage = () => {
 
   const orgChartQuery = useOrgChart(selectedUserId, Boolean(selectedUserId))
   const searchQueryEnabled = debouncedQuery.trim().length >= 2
-  const searchQueryResult = useOrgChartSearch(debouncedQuery.trim(), searchQueryEnabled)
+  const searchQueryResult = useEmployeeSearch(debouncedQuery.trim(), searchQueryEnabled)
 
   const searchResults = searchQueryResult.data ?? []
 

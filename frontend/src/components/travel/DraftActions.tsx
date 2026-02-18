@@ -1,6 +1,5 @@
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
-import { Card } from '../ui/Card'
  
 export type DraftEditValues = {
   categoryId: number | ''
@@ -32,7 +31,6 @@ interface DraftActionsProps {
 }
  
 export const DraftActions = ({
-  expenseId,
   isEditing,
   editValues,
   draftMessage,
@@ -53,10 +51,10 @@ export const DraftActions = ({
   isDeleting
 }: DraftActionsProps) => {
   return (
-    <Card className="space-y-3">
+    <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
       <div>
         <h4 className="text-sm font-semibold text-slate-900">Draft actions</h4>
-        <p className="text-xs text-slate-500">Upload a proof or submit when ready.</p>
+        <p className="text-xs text-slate-500">Edit fields and manage proof files before final submission.</p>
       </div>
  
       {isEditing ? (
@@ -172,8 +170,8 @@ export const DraftActions = ({
         </div>
       ) : null}
  
-      {draftMessage ? <p className="text-xs text-slate-500">{draftMessage}</p> : null}
-    </Card>
+      {draftMessage ? <p className="text-xs text-slate-600">{draftMessage}</p> : null}
+    </div>
   )
 }
  

@@ -77,6 +77,7 @@ export const Home = () => {
       </NavLink>
       <NavLink
         to="/games"
+        end
         className={({ isActive }) =>
           `${linkBase} ${isActive ? linkActive : ""}`
         }
