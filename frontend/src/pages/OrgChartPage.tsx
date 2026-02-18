@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Card } from '../components/ui/Card'
 import { Header } from '../components/Header'
@@ -83,16 +83,16 @@ export const OrgChartPage = () => {
   const searchQueryEnabled = debouncedQuery.trim().length >= 2
   const searchQueryResult = useOrgChartSearch(debouncedQuery.trim(), searchQueryEnabled)
 
-  const searchResults = useMemo(() => searchQueryResult.data ?? [], [searchQueryResult.data])
+  const searchResults = searchQueryResult.data ?? []
 
-  const orgPath = useMemo(() => {
+  const orgPath = (() => {
     if (!orgChartQuery.data) {
       return []
     }
 
     const targetId = selectedUserId ?? orgChartQuery.data.id
     return findPathToUser(orgChartQuery.data, targetId) ?? [orgChartQuery.data]
-  }, [orgChartQuery.data, selectedUserId])
+  })()
 
   const handleSelectUser = (userIdValue: number) => {
     setSelectedUserId(userIdValue)
@@ -143,7 +143,7 @@ export const OrgChartPage = () => {
                 <div className="px-3 py-2 text-xs text-slate-500">Searching...</div>
               ) : null}
               {searchQueryEnabled && !searchQueryResult.isLoading && searchResults.length ? (
-                searchResults.map((user) => (
+                searchResults.map((user:any) => (
                   <button
                     key={user.id}
                     type="button"

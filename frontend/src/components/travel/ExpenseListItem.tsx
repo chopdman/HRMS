@@ -1,56 +1,60 @@
-import React, { memo } from 'react'
-import { Badge } from '../ui/Badge'
-import { Card } from '../ui/Card'
-import { Review } from '../Review'
-import { formatCurrency, formatDate } from '../../utils/format'
- 
+import React, { memo } from "react";
+import { Badge } from "../ui/Badge";
+import { Card } from "../ui/Card";
+import { Review, type ReviewFormValues } from "../Review";
+import { formatCurrency, formatDate } from "../../utils/format";
+
 export interface Expense {
-  expenseId: number
-  amount: number
-  currency: string
-  expenseDate: string
-  categoryId: number
-  status: string
-  remarks?: string
-  proofs?: Array<{ proofId: number; fileName: string; filePath: string }>
-  employeeId?: number
+  expenseId: number;
+  amount: number;
+  currency: string;
+  expenseDate: string;
+  categoryId: number;
+  status: string;
+  remarks?: string;
+  proofs?: Array<{ proofId: number; fileName: string; filePath: string }>;
+  employeeId?: number;
 }
- 
+
 interface ExpenseListItemProps {
-  expense: Expense
-  isHr: boolean
-  isEmployee: boolean
-  onReview: (expenseId: number, formValues: { remarks: string; status: 'Approved' | 'Rejected' }) => void
-  reviewPending: boolean
-  children?: React.ReactNode
+  expense: Expense;
+  isHr: boolean;
+  isEmployee: boolean;
+  onReview: (expenseId: number, formValues: ReviewFormValues) => Promise<void>;
+  reviewPending: boolean;
+  children?: React.ReactNode;
 }
- 
+
 const statusTone = (status: string) => {
-  if (status === 'Approved') return 'success'
-  if (status === 'Rejected') return 'warning'
-  if (status === 'Submitted') return 'info'
-  return 'neutral'
-}
- 
+  if (status === "Approved") return "success";
+  if (status === "Rejected") return "warning";
+  if (status === "Submitted") return "info";
+  return "neutral";
+};
+
 export const ExpenseListItem = memo(
-  ({ expense, isHr,  onReview, reviewPending, children }: ExpenseListItemProps) => (
-    <div className="space-y-3">
-      <Card className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-slate-900">
-            {formatCurrency(expense.amount, expense.currency)} · {formatDate(expense.expenseDate)}
-          </p>
-          <p className="text-xs text-slate-500">
-            Expense ID: {expense.expenseId} · Category: {expense.categoryId}
-          </p>
-          {expense.proofs?.length ? (
-            <div className="text-xs text-slate-500">
-              <span className="font-medium">Proofs:</span>
-              <div className="mt-1 flex flex-wrap gap-2">
+  ({
+    expense,
+    isHr,
+    onReview,
+    reviewPending,
+    children,
+  }: ExpenseListItemProps) => (
+    <Card className="flex h-full flex-col gap-4 p-4">
+      <div className="flex flex-col gap-3  md:items-start md:justify-between">
+        <div className="flex flex-row items-center justify-between w-full">
+          <div>
+            <p className="text-sm font-semibold text-slate-900">
+              {formatCurrency(expense.amount, expense.currency)} ·{" "}
+              {formatDate(expense.expenseDate)}
+            </p>
+            {expense.proofs?.length ? (
+              <div className="text-xs flex gap-2 text-slate-900">
+                <span className="font-medium">Proofs:</span>
                 {expense.proofs.map((proof) => (
                   <a
                     key={proof.proofId}
-                    className="text-xs font-semibold text-brand-600 hover:text-brand-700"
+                    className="text-xs font-semibold underline text-blue-800 hover:text-blue-600"
                     href={proof.filePath}
                     target="_blank"
                     rel="noreferrer"
@@ -58,23 +62,32 @@ export const ExpenseListItem = memo(
                     {proof.fileName || `Proof ${proof.proofId}`}
                   </a>
                 ))}
+                {/* </div> */}
               </div>
-            </div>
-          ) : (
-            <p className="text-xs text-slate-500">Proofs: none</p>
-          )}
-          {expense.remarks ? <p className="text-xs text-slate-500">Remarks: {expense.remarks}</p> : null}
-        </div>
-        <div className="flex flex-col items-start gap-3 md:items-end">
+            ) : (
+              <p className="text-xs text-slate-500">Proofs: none</p>
+            )}
+            {expense.remarks ? (
+              <p className="text-xs text-slate-500">
+                Remarks: {expense.remarks}
+              </p>
+            ) : null}
+          </div>
           <Badge tone={statusTone(expense.status)}>{expense.status}</Badge>
-          {isHr ? (
-            <Review expenseId={expense.expenseId} onReview={onReview} isPending={reviewPending} />
+        </div>
+        <div className="flex flex-col items-start gap-3 ">
+          {isHr && expense.status === "Submitted" ? (
+            <Review
+              expenseId={expense.expenseId}
+              onReview={onReview}
+              isPending={reviewPending}
+            />
           ) : null}
         </div>
-      </Card>
-      {children}
-    </div>
-  )
-)
- 
- 
+      </div>
+      {children ? (
+        <div className="border-t border-slate-200 pt-4">{children}</div>
+      ) : null}
+    </Card>
+  ),
+);

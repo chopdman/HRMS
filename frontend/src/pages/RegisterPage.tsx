@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Input } from '../components/ui/Input'
@@ -21,7 +21,7 @@ export const RegisterPage = () => {
   const rolesQuery = usePublicRoles()
   const registerMutation = useRegister()
 
-  const roleOptions = useMemo(() => rolesQuery.data ?? [], [rolesQuery.data])
+  const roleOptions = rolesQuery.data ?? []
 
   const {
     register,
@@ -90,7 +90,7 @@ export const RegisterPage = () => {
               {...register('roleId', { required: 'Role is required.', valueAsNumber: true })}
             >
               <option value="">Select role</option>
-              {roleOptions.map((role) => (
+              {roleOptions.map((role:any) => (
                 <option key={role.roleId} value={role.roleId}>
                   {role.name}
                 </option>

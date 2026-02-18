@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { apiClient } from '../config/axios'
 import { useAppDispatch, useAppSelector } from '../config/hooks'
 import { clearTokens } from '../features/auth/authSlice'
@@ -8,7 +7,7 @@ export const useAuth = () => {
   const auth = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
 
-  const profile = useMemo(() => parseJwt(auth.tokens?.accessToken), [auth.tokens?.accessToken])
+  const profile = parseJwt(auth.tokens?.accessToken)
 
   const logout = async () => {
     const accessToken = auth.tokens?.accessToken

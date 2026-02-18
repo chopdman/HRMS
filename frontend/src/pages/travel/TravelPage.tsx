@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createSearchParams, useNavigate } from "react-router-dom";
 import { Header } from "../../components/Header";
@@ -82,6 +82,8 @@ export const TravelsPage = () => {
   const isTravelsLoading = activeTravelsQuery.isLoading;
   const isTravelsError = activeTravelsQuery.isError;
 
+  const editTotalClaimedAmount = travelDetailQuery.data?.totalClaimedAmount ?? null;
+
   const createForm = useForm<TravelCreateFormValues>({
     defaultValues: {
       travelName: "",
@@ -104,21 +106,15 @@ export const TravelsPage = () => {
     },
   });
 
-  const employeeOptions = useMemo(() => {
-    if (isHr) {
-      return employeesQuery.data ?? [];
-    }
-
-    if (isManager) {
-      return (teamMembersQuery.data ?? []).map((member) => ({
-        id: member.id,
-        fullName: member.fullName,
-        email: member.email,
-      }));
-    }
-
-    return [];
-  }, [employeesQuery.data, isHr, isManager, teamMembersQuery.data]);
+  const employeeOptions = isHr
+    ? employeesQuery.data ?? []
+    : isManager
+      ? (teamMembersQuery.data ?? []).map((member) => ({
+          id: member.id,
+          fullName: member.fullName,
+          email: member.email,
+        }))
+      : [];
 
   const onCreateTravel = async (values: TravelCreateFormValues) => {
     setMessage("");

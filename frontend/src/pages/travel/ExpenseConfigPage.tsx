@@ -94,7 +94,7 @@ export const ExpenseConfigPage = () => {
             />
             <button
               type="submit"
-              className="w-full rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-black hover:bg-brand-700 disabled:opacity-70"
+              className="w-full rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold bg-(--color-primary) hover:bg-brand-700 disabled:opacity-70"
               disabled={createCategory.isPending}
             >
               {createCategory.isPending ? "Saving..." : "Create category"}

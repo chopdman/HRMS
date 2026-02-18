@@ -40,14 +40,14 @@ export const TravelDocumentList = ({
   isSaving,
   isDeleting
 }: TravelDocumentListProps) => (
-  <div className="space-y-3">
+  <div className="grid gap-3  md:grid-cols-2 xl:grid-cols-3 ">
     {documents.map((doc) => {
       const isEditing = Boolean(editDocs[doc.documentId])
 
       return (
         <Card
           key={doc.documentId}
-          className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+          className="flex flex-col gap-2  "
         >
           <div>
             <p className="text-sm font-semibold text-slate-900">{doc.documentType}</p>

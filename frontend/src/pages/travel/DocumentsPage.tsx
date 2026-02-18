@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
@@ -74,13 +74,10 @@ export const DocumentsPage = () => {
     canFetchTravels,
   );
   const createdTravelsQuery = useCreatedTravels(isHr);
-  const normalizedFilters = useMemo(
-    () => ({
-      travelId: filters.travelId ? Number(filters.travelId) : undefined,
-      employeeId: filters.employeeId ? Number(filters.employeeId) : undefined,
-    }),
-    [filters],
-  );
+  const normalizedFilters = {
+    travelId: filters.travelId ? Number(filters.travelId) : undefined,
+    employeeId: filters.employeeId ? Number(filters.employeeId) : undefined,
+  };
 
   const { data, isLoading, isError, refetch } =
     useTravelDocuments(normalizedFilters);
@@ -88,21 +85,15 @@ export const DocumentsPage = () => {
   const updateMutation = useUpdateTravelDocument();
   const deleteMutation = useDeleteTravelDocument();
 
-  const employeeOptions = useMemo(() => {
-    if (isHr) {
-      return employeesQuery.data ?? [];
-    }
-
-    if (isManager) {
-      return (teamMembersQuery.data ?? []).map((member: any) => ({
-        id: member.id,
-        fullName: member.fullName,
-        email: member.email,
-      }));
-    }
-
-    return [];
-  }, [employeesQuery.data, isHr, isManager, teamMembersQuery.data]);
+  const employeeOptions = isHr
+    ? (employeesQuery.data ?? [])
+    : isManager
+      ? (teamMembersQuery.data ?? []).map((member: any) => ({
+          id: member.id,
+          fullName: member.fullName,
+          email: member.email,
+        }))
+      : [];
 
   const listLoading = isHr
     ? employeesQuery.isLoading
@@ -126,7 +117,7 @@ export const DocumentsPage = () => {
   );
 
   const uploadEmployeeOptions = isHr
-    ? uploadAssigneesQuery.data ?? []
+    ? (uploadAssigneesQuery.data ?? [])
     : employeeOptions;
 
   useEffect(() => {
@@ -222,6 +213,7 @@ export const DocumentsPage = () => {
   };
 
   const handleDeleteDoc = async (documentId: number) => {
+    if (!globalThis.confirm("Delete this document?")) return;
     await deleteMutation.mutateAsync(documentId);
     await queryClient.invalidateQueries({ queryKey: ["travel-documents"] });
     await refetch();
@@ -256,9 +248,12 @@ export const DocumentsPage = () => {
         control={filterForm.control}
         employeeOptions={employeeOptions}
         onSearch={setSearchQuery}
+        showEmployeeSearch={role !== "Employee"}
         isLoadingOptions={listLoading}
         travelOptions={travelOptionsQuery.data}
-        selectedTravelId={filters.travelId ? Number(filters.travelId) : undefined}
+        selectedTravelId={
+          filters.travelId ? Number(filters.travelId) : undefined
+        }
         onEmployeeChange={() => filterForm.setValue("travelId", undefined)}
         onTravelChange={(value) => filterForm.setValue("travelId", value)}
       />

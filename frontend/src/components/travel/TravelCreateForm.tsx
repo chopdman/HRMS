@@ -1,5 +1,5 @@
 import { Controller, type UseFormReturn } from 'react-hook-form'
-import { AsyncSearchableMultiSelect } from '../ui/Combobox'
+import { AsyncSearchableMultiSelect } from '../ui/AsyncSearchableMultiSelect '
 import { Card } from '../ui/Card'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
@@ -92,7 +92,7 @@ export const TravelCreateForm = ({
         />
         <div className="md:col-span-2">
           <Button
-            className="inline-flex w-full items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-black hover:bg-brand-700 disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold bg-(--color-primary) hover:bg-brand-700 disabled:opacity-70"
             type="submit"
             disabled={isSubmitting}
           >

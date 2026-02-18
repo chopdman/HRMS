@@ -1,7 +1,7 @@
-import { useForm,type UseFormReturn } from 'react-hook-form'
+import { type UseFormReturn } from 'react-hook-form'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
-import { SearchableSelect } from '../ui/Combobox'
+import { SearchableSelect } from '../ui/SearchableSelect'
 import { formatDate } from '../../utils/format'
  
 export type ExpenseFormValues = {
@@ -27,7 +27,8 @@ interface ExpenseSubmitFormProps {
     | undefined
   isLoading: boolean
   isSubmitting: boolean
-  successMessage: string
+  submitMessage: string
+  submitMessageTone: 'success' | 'error'
 }
  
 export const ExpenseSubmitForm = ({
@@ -37,7 +38,8 @@ export const ExpenseSubmitForm = ({
   assignments,
   isLoading,
   isSubmitting,
-  successMessage
+  submitMessage,
+  submitMessageTone
 }: ExpenseSubmitFormProps) => {
   const {
     register,
@@ -154,7 +156,11 @@ export const ExpenseSubmitForm = ({
           </button>
         </div>
       </form>
-      {successMessage ? <p className="text-sm text-emerald-600">{successMessage}</p> : null}
+      {submitMessage ? (
+        <p className={`text-sm ${submitMessageTone === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
+          {submitMessage}
+        </p>
+      ) : null}
     </div>
   )
 }

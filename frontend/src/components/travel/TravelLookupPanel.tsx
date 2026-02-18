@@ -1,5 +1,5 @@
 import { Controller, type Control } from 'react-hook-form'
-import { AsyncSearchableSelect } from '../ui/Combobox'
+import { AsyncSearchableSelect } from '../ui/AsyncSearchableSelect'
 import { Card } from '../ui/Card'
 import type { EmployeeOption } from '../../types/employee'
 import type { TravelFilterValues } from '../../types/travel-forms'

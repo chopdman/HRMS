@@ -7,7 +7,7 @@ export const AccessDeniedPage = () => (
         <h1 className="text-2xl font-semibold text-slate-900">Access denied</h1>
         <p className="mt-2 text-sm text-slate-500">You don't have permission to view this page.</p>
         <Link
-          className="mt-6 inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-black hover:bg-brand-700"
+          className="mt-6 inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold bg-(--color-primary) hover:bg-brand-700"
           to="/"
         >
           Back to dashboard
