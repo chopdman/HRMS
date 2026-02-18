@@ -15,7 +15,7 @@ public class ExpenseCategoryService
  
     public async Task<ExpenseCategoryResponseDto> CreateCategoryAsync(ExpenseCategoryCreateDto dto)
     {
-        var exists = await _repo.CategoryExistsAsync(dto.CategoryName);
+        var exists = await _repo.CategoryExistsAsync(dto.CategoryName!);
         if (exists)
         {
             throw new ArgumentException("Category already exists.");

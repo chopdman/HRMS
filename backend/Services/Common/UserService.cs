@@ -125,11 +125,6 @@ namespace backend.Services.Common
             return current;
         }
 
-        public async Task<IReadOnlyCollection<OrgChartUserDto>> SearchOrgChartUsersAsync(string trimmed)
-        {
-            return await _repo.SearchOrgChartUsersAsync(trimmed);
-        }
-
         public async Task<UserResponseDto?> UpdateProfilePhotoAsync(long userId, IFormFile file)
         {
             var user = await _repo.GetByIdAsync(userId);
