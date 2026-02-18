@@ -89,41 +89,6 @@ public class UsersController : ControllerBase
         });
     }
 
-    [Authorize]
-    [HttpGet("org-chart")]
-    public async Task<IActionResult> GetOrgChart()
-    {
-        var currentUserId = _auth.GetUserId(User);
-        if (currentUserId is null)
-        {
-            return Unauthorized(new ApiResponse<object>
-            {
-                Success = false,
-                Code = 401,
-                Error = "Invalid token, user not found."
-            });
-        }
-
-        try
-        {
-            var result = await _service.GetOrgChartAsync(currentUserId.Value);
-            return Ok(new ApiResponse<object>
-            {
-                Success = true,
-                Code = 200,
-                Data = result
-            });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new ApiResponse<object>
-            {
-                Success = false,
-                Code = 400,
-                Error = ex.Message
-            });
-        }
-    }
 
     [Authorize]
     [HttpGet("org-chart/{userId:int}")]
@@ -148,30 +113,6 @@ public class UsersController : ControllerBase
                 Error = ex.Message
             });
         }
-    }
-
-    [Authorize]
-    [HttpGet("org-search")]
-    public async Task<IActionResult> SearchOrgChartUsers([FromQuery] string? query)
-    {
-        if (string.IsNullOrWhiteSpace(query))
-        {
-            return BadRequest(new ApiResponse<object>
-            {
-                Success = false,
-                Code = 400,
-                Error = "Query is required."
-            });
-        }
-
-        var trimmed = query.Trim();
-        var result = await _service.SearchOrgChartUsersAsync(trimmed);
-        return Ok(new ApiResponse<object>
-        {
-            Success = true,
-            Code = 200,
-            Data = result
-        });
     }
 
     [Authorize]

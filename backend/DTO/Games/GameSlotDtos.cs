@@ -34,9 +34,23 @@ public record GameSlotRequestDto(
     IReadOnlyCollection<long> ParticipantIds
 );
 
-  public record AllocationResult(
-        IReadOnlyCollection<long> AssignedUserIds,
-        IReadOnlyCollection<GameSlotRequest> AssignedRequests,
-        IReadOnlyCollection<GameSlotRequest> WaitlistedRequests,
-        long RequestedBy
-    );
+public record GameSlotRequestSummaryDto(
+    long RequestId,
+    long GameId,
+    string GameName,
+    long SlotId,
+    DateTime StartTime,
+    DateTime EndTime,
+    GameSlotRequestStatus Status,
+    DateTime RequestedAt,
+    long RequestedBy,
+    IReadOnlyCollection<EmployeeLookupDto> Participants
+);
+
+public record AllocationResult(
+    IReadOnlyCollection<long> AssignedUserIds,
+    IReadOnlyCollection<GameSlotRequest> AssignedRequests,
+    IReadOnlyCollection<GameSlotRequest> WaitlistedRequests,
+    long RequestedBy,
+    DateTime CycleStart
+);

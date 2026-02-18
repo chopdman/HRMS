@@ -16,7 +16,6 @@ public interface IUserRepository
 
     Task<List<OrgChartUserDto>> GetOrgChartUsersAsync();
 
-    Task<List<OrgChartUserDto>> SearchOrgChartUsersAsync(string trimmed);
 
     Task<List<UserResponseDto>> GetListOfEmployeeAsync();
 

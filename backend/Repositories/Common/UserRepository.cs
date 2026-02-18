@@ -69,23 +69,7 @@ namespace backend.Repositories.Common
                 .ToListAsync();
         }
 
-        public async Task<List<OrgChartUserDto>> SearchOrgChartUsersAsync(string trimmed)
-        {
-            var lowered = trimmed.ToLower();
-            return await _db.Users
-                .Where(u => u.FullName.ToLower().Contains(lowered) || u.Email.ToLower().Contains(lowered))
-                .OrderBy(u => u.FullName)
-                .Select(u => new OrgChartUserDto(
-                    u.UserId,
-                    u.FullName,
-                    u.Email,
-                    u.Department,
-                    u.Designation,
-                    u.ProfilePhotoUrl,
-                    u.ManagerId
-                ))
-                .ToListAsync();
-        }
+
 
         public async Task<List<UserResponseDto>> GetListOfEmployeeAsync()
         {
@@ -129,7 +113,6 @@ namespace backend.Repositories.Common
             r => EF.Property<long?>(r, "RoleId")!,
             (u, r) => new { User = u, Role = r }
             )
-            .Where(ti => ti.Role != null && ti.Role.Name == "Employee")
             .Where(ti => ti.User.FullName.ToLower().Contains(trimmed.ToLower()) ||
                 ti.User.Email.ToLower().Contains(trimmed.ToLower()))
             .OrderBy(ti => ti.User.FullName)

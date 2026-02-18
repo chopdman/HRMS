@@ -90,7 +90,7 @@ public static class ServiceConfig
 
         services.AddHttpClient();
 
-        services.AddScoped<PasswordHasher>();
+       services.AddScoped<PasswordHasher>();
         services.AddScoped<TokenService>();
         services.AddScoped<TravelService>();
         services.AddScoped<RoleService>();
@@ -113,13 +113,17 @@ public static class ServiceConfig
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<NotificationService>();
         services.AddScoped<EmailService>();
-        services.AddScoped<CalendarInviteService>();
-        services.AddScoped<IGameSchedulingRepository, GameSchedulingRepository>();
-        services.AddHostedService<GameSlotService>();
-        services.AddScoped<GameSchedulingService>();
+        services.AddScoped<IGameSlotRepository, GameSlotRepository>();
+        services.AddScoped<IGameRequestRepository, GameRequestRepository>();
+        services.AddScoped<IGameBookingRepository, GameBookingRepository>();
+        services.AddScoped<IGameAllocationRepository, GameAllocationRepository>();
+        services.AddScoped<GameSlotService>();
+        services.AddScoped<GameRequestService>();
+        services.AddScoped<GameBookingService>();
+        services.AddScoped< GameAllocationService>();
+        services.AddHostedService<GameSlotBackgroundService>();
         services.AddScoped<IGameRepository, GameRepository>();
         services.AddScoped<GameService>();
-      
 
         return services;
     }

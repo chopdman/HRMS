@@ -41,13 +41,7 @@ public class GameSlotRepository : IGameSlotRepository
             .ToListAsync();
     }
 
-    public async Task<IReadOnlyCollection<GameSlot>> GetSlotsOverlappingRangeAsync(long gameId, DateTime start, DateTime endExclusive)
-    {
-        return await _db.GameSlots
-            .Where(s => s.GameId == gameId && s.EndTime >= start && s.StartTime < endExclusive)
-            .OrderBy(s => s.StartTime)
-            .ToListAsync();
-    }
+
 
     public async Task<IReadOnlyCollection<GameSlot>> GetSlotsForDateAsync(long gameId, DateTime date)
     {

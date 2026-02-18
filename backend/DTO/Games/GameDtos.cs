@@ -20,9 +20,9 @@ public record GameCreateDto(
 );
 
 public record GameUpdateDto(
-    [Required, MaxLength(100)] string GameName,
-    [Required] TimeSpan OperatingHoursStart,
-    [Required] TimeSpan OperatingHoursEnd,
-    [Range(1, 1440)] int SlotDurationMinutes,
-    [Range(1, 50)] int MaxPlayersPerSlot
+    [MaxLength(100)] string? GameName,
+     TimeSpan? OperatingHoursStart,
+     TimeSpan? OperatingHoursEnd,
+    [Range(1, 1440)] int? SlotDurationMinutes,
+    [Range(1, 50)] int? MaxPlayersPerSlot
 );

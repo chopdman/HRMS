@@ -63,24 +63,7 @@ public class TravelController : ControllerBase
         }
     }
 
-    // [Authorize(Roles = "Employee,Manager,HR")]
-    // [HttpGet("assigned")]
-    // public async Task<IActionResult> GetAssignedTravels([FromQuery] long? employeeId)
-    // {
 
-    //     var role = User.FindFirstValue(ClaimTypes.Role) ?? string.Empty;
-    //     var userId =  _auth.GetUserId(User);
-
-
-    //     var resolvedEmployeeId = role == "Employee" ? userId : employeeId;
-    //     if (resolvedEmployeeId is null)
-    //     {
-    //         return BadRequest(new { message = "employeeId is required for this role." });
-    //     }
-
-    //     var result = await _service.GetAssignedTravelsAsync(resolvedEmployeeId.Value);
-    //     return Ok(result);
-    // }
 
     [Authorize(Roles = "Employee,Manager,HR")]
     [HttpGet("assignments")]
