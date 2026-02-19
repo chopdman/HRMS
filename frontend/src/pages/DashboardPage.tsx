@@ -40,7 +40,7 @@ export const DashboardPage = () => {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(240px,280px))] justify-center sm:justify-start">
         {isEmployee ? (
           <StatCard
             label="Assigned travels"

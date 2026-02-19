@@ -79,6 +79,8 @@ export const ExpenseConfigPage = () => {
               error={categoryErrors.categoryName?.message}
               {...registerCategory("categoryName", {
                 required: "Category name is required.",
+                validate: (value) =>
+                  value.trim().length > 0 || "Category name is required.",
               })}
             />
             <Input
@@ -120,7 +122,7 @@ export const ExpenseConfigPage = () => {
           ) : null}
           {categoriesQuery.data?.length ? (
             <div className="space-y-2">
-              {categoriesQuery.data.map((category) => (
+              {categoriesQuery.data.map((category:any) => (
                 <div
                   key={category.categoryId}
                   className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm"

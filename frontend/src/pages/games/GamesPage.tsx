@@ -193,7 +193,7 @@ export const GamesPage = () => {
           ) : null}
 
           {slotOptions.length ? (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(260px,320px))] justify-center sm:justify-start">
               {(slotsQuery.data ?? []).map((slot: GameSlot) => (
                 <button
                   key={slot.slotId}

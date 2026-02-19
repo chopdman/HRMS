@@ -1,30 +1,30 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Card } from '../components/ui/Card'
-import { Header } from '../components/Header'
-import { Input } from '../components/ui/Input'
-import { Button } from '../components/ui/Button'
-import { Spinner } from '../components/ui/Spinner'
-import { EmptyState } from '../components/ui/EmptyState'
-import { useAuth } from '../hooks/useAuth'
-import { useOrgChart } from '../hooks/useOrgChart'
-import {useEmployeeSearch} from "../hooks/useEmployeeSearch"
-import { useDebouncedValue } from '../hooks/useDebouncedValue'
-import type { OrgChartNode, OrgChartUser } from '../types/org-chart'
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Card } from "../components/ui/Card";
+import { Header } from "../components/Header";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
+import { Spinner } from "../components/ui/Spinner";
+import { EmptyState } from "../components/ui/EmptyState";
+import { useAuth } from "../hooks/useAuth";
+import { useOrgChart } from "../hooks/useOrgChart";
+import { useEmployeeSearch } from "../hooks/useEmployeeSearch";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import type { OrgChartNode, OrgChartUser } from "../types/org-chart";
+import { FaRegUser } from "react-icons/fa";
 
 type OrgChartNodeProps = {
-  node: OrgChartNode
-  onSelect: (userId: number) => void
-}
+  node: OrgChartNode;
+  onSelect: (userId: number) => void;
+};
 
 const OrgChartNodeCard = ({ node, onSelect }: OrgChartNodeProps) => {
-  const departmentLabel = node.department ? `• ${node.department}` : ''
-  const designationLabel = node.designation ? `• ${node.designation}` : ''
+  const meta = [node.department, node.designation].filter(Boolean).join(" • ");
 
   return (
     <button
       type="button"
-      className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:border-brand-200"
+      className="w-full rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm hover:border-brand-200"
       onClick={() => onSelect(node.id)}
     >
       <div className="flex items-center gap-4">
@@ -36,74 +36,74 @@ const OrgChartNodeCard = ({ node, onSelect }: OrgChartNodeProps) => {
           />
         ) : (
           <div className="flex h-12 w-12 items-center justify-center rounded-full border border-dashed border-slate-300 text-xs text-slate-400">
-            N/A
+            <FaRegUser />
           </div>
         )}
         <div>
-          <p className="text-sm font-semibold text-slate-900">{node.fullName}</p>
-          <p className="text-xs text-slate-500">{node.email}</p>
-          <p className="text-xs text-slate-500">
-            {departmentLabel} {designationLabel}
+          <p className="text-sm font-semibold text-slate-900">
+            {node.fullName}
           </p>
+          <p className="text-xs text-slate-500">{node.email}</p>
+          {meta ? <p className="text-xs text-slate-500">{meta}</p> : null}
         </div>
       </div>
     </button>
-  )
-}
+  );
+};
 
-const findPathToUser = (node: OrgChartNode, targetId: number): OrgChartNode[] | null => {
+const findPathToUser = (
+  node: OrgChartNode,
+  targetId: number,
+): OrgChartNode[] | null => {
   if (node.id === targetId) {
-    return [node]
+    return [node];
   }
 
   for (const child of node.directReports) {
-    const childPath = findPathToUser(child, targetId)
+    const childPath = findPathToUser(child, targetId);
     if (childPath) {
-      return [node, ...childPath]
+      return [node, ...childPath];
     }
   }
 
-  return null
-}
-
-const getAlignmentClass = (index: number) => {
-  if (index === 0) {
-    return 'flex justify-center'
-  }
-
-  return index % 2 === 1 ? 'flex justify-start' : 'flex justify-end'
-}
+  return null;
+};
 
 export const OrgChartPage = () => {
-  const { userId } = useAuth()
-  const [selectedUserId, setSelectedUserId] = useState<number | undefined>(userId)
-  const [searchQuery, setSearchQuery] = useState('')
-  const debouncedQuery = useDebouncedValue(searchQuery, 300)
+  const { userId } = useAuth();
+  const [selectedUserId, setSelectedUserId] = useState<number | undefined>(
+    userId,
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(searchQuery, 300);
 
-  const orgChartQuery = useOrgChart(selectedUserId, Boolean(selectedUserId))
-  const searchQueryEnabled = debouncedQuery.trim().length >= 2
-  const searchQueryResult = useEmployeeSearch(debouncedQuery.trim(), searchQueryEnabled)
+  const orgChartQuery = useOrgChart(selectedUserId, Boolean(selectedUserId));
+  const searchQueryEnabled = debouncedQuery.trim().length >= 2;
+  const searchQueryResult = useEmployeeSearch(
+    debouncedQuery.trim(),
+    searchQueryEnabled,
+  );
 
-  const searchResults = searchQueryResult.data ?? []
+  const searchResults = searchQueryResult.data ?? [];
 
   const orgPath = (() => {
     if (!orgChartQuery.data) {
-      return []
+      return [];
     }
 
-    const targetId = selectedUserId ?? orgChartQuery.data.id
-    return findPathToUser(orgChartQuery.data, targetId) ?? [orgChartQuery.data]
-  })()
+    const targetId = selectedUserId ?? orgChartQuery.data.id;
+    return findPathToUser(orgChartQuery.data, targetId) ?? [orgChartQuery.data];
+  })();
 
   const handleSelectUser = (userIdValue: number) => {
-    setSelectedUserId(userIdValue)
-    setSearchQuery('')
-  }
+    setSelectedUserId(userIdValue);
+    setSearchQuery("");
+  };
 
   const handleSearchSelect = (user: OrgChartUser) => {
-    setSelectedUserId(user.id)
-    setSearchQuery(user.fullName)
-  }
+    setSelectedUserId(user.id);
+    setSearchQuery(user.fullName);
+  };
 
   return (
     <section className="space-y-6">
@@ -129,40 +129,50 @@ export const OrgChartPage = () => {
         }
       />
 
-      <Card>
-        <div className="grid gap-4 md:grid-cols-2">
-          <Input
-            label="Search employee"
-            placeholder="Search by name or email"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-          <div className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Select from results</span>
-            <div className="max-h-40 overflow-y-auto rounded-md border border-slate-200 bg-white">
-              {searchQueryEnabled && searchQueryResult.isLoading ? (
-                <div className="px-3 py-2 text-xs text-slate-500">Searching...</div>
-              ) : null}
-              {searchQueryEnabled && !searchQueryResult.isLoading && searchResults.length ? (
-                searchResults.map((user:any) => (
+      <Card className="space-y-3">
+        <Input
+          label="Search employee"
+          placeholder="Search by name or email"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+        />
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-slate-700">
+            Select from results
+          </span>
+          <div className="max-h-48 overflow-y-auto rounded-md border border-slate-200 bg-white">
+            {searchQueryEnabled && searchQueryResult.isLoading ? (
+              <div className="px-3 py-2 text-xs text-slate-500">
+                Searching...
+              </div>
+            ) : null}
+            {searchQueryEnabled &&
+            !searchQueryResult.isLoading &&
+            searchResults.length
+              ? searchResults.map((user: OrgChartUser) => (
                   <button
                     key={user.id}
                     type="button"
-                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-brand-50"
+                    className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-brand-50"
                     onClick={() => handleSearchSelect(user)}
                   >
-                    <span>{user.fullName}</span>
+                    <span className="font-medium text-slate-800">
+                      {user.fullName}
+                    </span>
                     <span className="text-xs text-slate-500">{user.email}</span>
                   </button>
                 ))
-              ) : null}
-              {searchQueryEnabled && !searchQueryResult.isLoading && !searchResults.length ? (
-                <div className="px-3 py-2 text-xs text-slate-500">No matches</div>
-              ) : null}
-              {!searchQueryEnabled ? (
-                <div className="px-3 py-2 text-xs text-slate-500">Type at least 2 characters.</div>
-              ) : null}
-            </div>
+              : null}
+            {searchQueryEnabled &&
+            !searchQueryResult.isLoading &&
+            !searchResults.length ? (
+              <div className="px-3 py-2 text-xs text-slate-500">No matches</div>
+            ) : null}
+            {!searchQueryEnabled ? (
+              <div className="px-3 py-2 text-xs text-slate-500">
+                Type at least 2 characters.
+              </div>
+            ) : null}
           </div>
         </div>
       </Card>
@@ -175,39 +185,41 @@ export const OrgChartPage = () => {
 
       {orgChartQuery.isError ? (
         <Card>
-          <p className="text-sm text-red-600">Unable to load organization chart.</p>
+          <p className="text-sm text-red-600">
+            Unable to load organization chart.
+          </p>
         </Card>
       ) : null}
 
       {orgChartQuery.data ? (
-        <div className="space-y-3">
-          {orgPath.map((node, index) => {
-            const alignmentClass = getAlignmentClass(index)
-
-            return (
-              <div key={node.id} className="space-y-2">
-                {index > 0 ? (
-                  <div className={alignmentClass}>
-                    <div className="flex w-full max-w-sm justify-center">
-                      <div className="h-6 w-px bg-slate-300" />
-                    </div>
-                  </div>
-                ) : null}
-                <div className={alignmentClass}>
-                  <OrgChartNodeCard node={node} onSelect={handleSelectUser} />
-                </div>
+        <Card className="space-y-3">
+          <div>
+            <h3 className="text-base font-semibold text-slate-900">
+              Reporting path
+            </h3>
+            <p className="text-xs text-slate-500">
+              Click any person to focus their organization chain.
+            </p>
+          </div>
+          <div className="mx-auto w-full max-w-2xl space-y-1">
+            {orgPath.map((node, index) => (
+              <div key={node.id} className="flex flex-col items-center">
+                {index > 0 ? <div className="h-5 w-px bg-slate-300" /> : null}
+                <OrgChartNodeCard node={node} onSelect={handleSelectUser} />
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        </Card>
       ) : null}
 
-      {!orgChartQuery.isLoading && !orgChartQuery.isError && !orgChartQuery.data ? (
+      {!orgChartQuery.isLoading &&
+      !orgChartQuery.isError &&
+      !orgChartQuery.data ? (
         <EmptyState
           title="No org chart"
           description="We couldn't find any reporting structure for this user."
         />
       ) : null}
     </section>
-  )
-}
+  );
+};
