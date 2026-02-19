@@ -4,7 +4,7 @@ namespace backend.Services.Games;
 
 public static class GameSlotAvailabilityService
 {
-    // checking condition for changing status of slot based on time 
+    // updates slot status between open and locked based on current time
     public static bool UpdateSlotAvailability(GameSlot slot, DateTime localNow)
     {
         if (slot.Status == GameSlotStatus.Booked || slot.Status == GameSlotStatus.Cancelled)

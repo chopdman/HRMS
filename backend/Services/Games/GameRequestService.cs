@@ -21,7 +21,7 @@ public class GameRequestService
         _bookingService = bookingService;
     }
 
-    // first check all validations and then request for a slot
+    // it first check all validation and then add slot request.if request is for immediate slot then it booked immediately
     public async Task<GameSlotRequestDto> RequestSlotAsync(long gameId, long slotId, long requesterId, IReadOnlyCollection<long> participantIds)
     {
         var slot = await _repository.GetSlotWithGameAsync(gameId, slotId);
@@ -36,7 +36,7 @@ public class GameRequestService
             throw new ArgumentException("Slot is not available.");
         }
 
-        var now = DateTime.UtcNow;
+        var now = DateTime.Now;
         if (slot.StartTime < now)
         {
             throw new ArgumentException("Slot has already started.");
@@ -66,11 +66,14 @@ public class GameRequestService
         }
 
         var bookingDate = slot.StartTime.Date;
-        var hasBooking = await _repository.HasBookingForDateAsync(requestUserIds, bookingDate);
-        if (hasBooking)
-        {
-            throw new ArgumentException("One or more participants already have a booking for this day.");
-        }
+
+        // validation if we want to restrict employee to play only one game per day.
+
+        // var hasBooking = await _repository.HasBookingForDateAsync(requestUserIds, bookingDate);
+        // if (hasBooking)
+        // {
+        //     throw new ArgumentException("One or more participants already have a booking for this day.");
+        // }
 
         var hasActiveRequest = await _repository.HasActiveRequestForDateAsync(requestUserIds, bookingDate);
         if (hasActiveRequest)
@@ -113,6 +116,7 @@ public class GameRequestService
         );
     }
 
+    // cancel requests and if request is already been booked then cancels booking also.
     public async Task CancelRequestAsync(long requestId, long requesterId)
     {
         var request = await _repository.GetSlotRequestByIdAsync(requestId);
@@ -142,6 +146,7 @@ public class GameRequestService
         await _repository.SaveAsync();
     }
 
+    // return user's requests in a given date rannge
     public async Task<IReadOnlyCollection<GameSlotRequestSummaryDto>> GetMyRequestsAsync(long userId, DateTime from, DateTime to)
     {
         var requests = await _repository.GetActiveRequestsForUserAsync(userId, from, to);

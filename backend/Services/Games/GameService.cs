@@ -13,12 +13,14 @@ public class GameService
         _repository = repository;
     }
 
+    // return all games detail 
     public async Task<IReadOnlyCollection<GameDto>> GetAllAsync()
     {
         var games = await _repository.GetAllAsync();
         return games.Select(MapGame).ToList();
     }
 
+    // return game by id
     public async Task<GameDto> GetByIdAsync(long gameId)
     {
         var game = await _repository.GetByIdAsync(gameId);
@@ -30,6 +32,7 @@ public class GameService
         return MapGame(game);
     }
 
+    // create a new game
     public async Task<GameDto> CreateAsync(GameCreateDto dto)
     {
         ValidateGame(dto.GameName, dto.OperatingHoursStart, dto.OperatingHoursEnd, dto.SlotDurationMinutes, dto.MaxPlayersPerSlot);
@@ -49,6 +52,7 @@ public class GameService
         return MapGame(game);
     }
 
+    // update game
     public async Task<GameDto> UpdateAsync(long gameId, GameUpdateDto dto)
     {
 
@@ -83,6 +87,7 @@ public class GameService
         return MapGame(game);
     }
 
+    // return user's games interest
     public async Task<IReadOnlyCollection<GameInterestDto>> GetUserInterestsAsync(long userId)
     {
         var games = await _repository.GetAllAsync();
@@ -96,6 +101,7 @@ public class GameService
         )).ToList();
     }
 
+    // update or create a interest for a game
     public async Task<IReadOnlyCollection<GameInterestDto>> UpdateUserInterestsAsync(long userId, IReadOnlyCollection<long> gameIds)
     {
         var distinctIds = gameIds.Distinct().ToList();
@@ -146,6 +152,7 @@ public class GameService
         return await GetUserInterestsAsync(userId);
     }
 
+    // validations for a game
     private static void ValidateGame(string name, TimeSpan start, TimeSpan end, int slotDurationMinutes, int maxPlayersPerSlot)
     {
         if (string.IsNullOrWhiteSpace(name))

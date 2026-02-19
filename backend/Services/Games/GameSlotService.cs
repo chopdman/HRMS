@@ -5,7 +5,7 @@ using backend.Repositories.Games;
 
 namespace backend.Services.Games;
 
-public class GameSlotService 
+public class GameSlotService
 {
     private readonly IGameSlotRepository _repository;
 
@@ -14,6 +14,7 @@ public class GameSlotService
         _repository = repository;
     }
 
+    // generates list of slots for given date range based on operating hours and slot duration
     public async Task<IReadOnlyCollection<GameSlotDto>> GenerateSlotsAsync(long gameId, DateTime startDate, DateTime endDate)
     {
         var game = await _repository.GetGameByIdAsync(gameId);
@@ -76,10 +77,11 @@ public class GameSlotService
         return slots.Select(s => new GameSlotDto(s.SlotId, s.GameId, s.StartTime, s.EndTime, s.Status)).ToList();
     }
 
+    // it return slots for given date but check current time and based on that update status of slot
     public async Task<IReadOnlyCollection<GameSlotDto>> GetSlotsForDateAsync(long gameId, DateTime date)
     {
         var slots = await _repository.GetSlotsForDateAsync(gameId, date);
-        var localNow =DateTime.UtcNow;
+        var localNow = DateTime.Now;
         var shouldSave = false;
 
         foreach (var slot in slots)
@@ -95,6 +97,7 @@ public class GameSlotService
         return slots.Select(s => new GameSlotDto(s.SlotId, s.GameId, s.StartTime, s.EndTime, s.Status)).ToList();
     }
 
+    // give detail about upcoming slots
     public async Task<IReadOnlyCollection<GameSlotSummaryDto>> GetUpcomingSlotsAsync(long gameId, DateTime fromUtc, DateTime toUtc)
     {
         var slots = await _repository.GetSlotsInRangeAsync(gameId, fromUtc, toUtc);
@@ -104,7 +107,7 @@ public class GameSlotService
             return Array.Empty<GameSlotSummaryDto>();
         }
 
-        var localNow = DateTime.UtcNow;
+        var localNow = DateTime.Now;
         var shouldSave = false;
         foreach (var slot in slots)
         {

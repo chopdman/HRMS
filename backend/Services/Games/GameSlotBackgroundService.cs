@@ -12,6 +12,7 @@ public class GameSlotBackgroundService : BackgroundService
         _logger = logger;
     }
 
+    // background job (cron job)-run continuously on a fixed interval to allocate upcoming slots
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
