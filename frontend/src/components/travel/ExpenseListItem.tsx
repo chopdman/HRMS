@@ -10,10 +10,15 @@ export interface Expense {
   currency: string;
   expenseDate: string;
   categoryId: number;
+  categoryName?: string | null;
   status: string;
   remarks?: string;
   proofs?: Array<{ proofId: number; fileName: string; filePath: string }>;
   employeeId?: number;
+  employeeName?: string | null;
+  submittedAt?: string | null;
+  reviewedByName?: string | null;
+  reviewedAt?: string | null;
 }
 
 interface ExpenseListItemProps {
@@ -55,6 +60,13 @@ export const ExpenseListItem = memo(
             {formatCurrency(expense.amount, expense.currency)}
           </p>
           <p className="text-xs text-slate-600">{formatDate(expense.expenseDate)}</p>
+          <div className="mt-2 space-y-1 text-xs text-slate-600">
+            {expense.employeeName ? <p>Employee: {expense.employeeName}</p> : null}
+            {expense.categoryName ? <p>Category: {expense.categoryName}</p> : null}
+            {expense.submittedAt ? <p>Submitted: {formatDate(expense.submittedAt)}</p> : null}
+            {expense.reviewedByName ? <p>Reviewed by: {expense.reviewedByName}</p> : null}
+            {expense.reviewedAt ? <p>Reviewed on: {formatDate(expense.reviewedAt)}</p> : null}
+          </div>
         </div>
         <Badge tone={statusTone(expense.status)}>{expense.status}</Badge>
       </div>

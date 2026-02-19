@@ -252,6 +252,17 @@ export const TravelsPage = () => {
     });
   };
 
+  const goToExpenses = (travelId: number) => {
+    const params: Record<string, string> = { travelId: String(travelId) };
+    if (!isEmployee && normalizedEmployeeId) {
+      params.employeeId = String(normalizedEmployeeId);
+    }
+    navigate({
+      pathname: "/expenses",
+      search: createSearchParams(params).toString(),
+    });
+  };
+
   return (
     <section className="space-y-6">
       <Header title="Travels" />
@@ -303,6 +314,7 @@ export const TravelsPage = () => {
           onDelete={onDeleteTravel}
           onCancelEdit={() => setEditingTravelId(null)}
           onViewDocuments={goToDocuments}
+          onViewExpenses={goToExpenses}
           isUpdating={updateTravel.isPending}
           employeeOptions={editEmployeeOptions}
           onSearch={setSearchQuery}

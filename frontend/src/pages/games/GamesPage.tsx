@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 import { Header } from '../../components/Header'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -27,6 +28,7 @@ const statusStyles: Record<string, string> = {
 }
 
 export const GamesPage = () => {
+  const navigate = useNavigate()
   const gamesQuery = useGames()
   const interestsQuery = useGameInterests()
   const [selectedGameId, setSelectedGameId] = useState<number | undefined>(undefined)
@@ -41,11 +43,27 @@ export const GamesPage = () => {
   const empSearch = useEmployeeSearch(searchQuery, searchQuery.length >= 2)
   const { userId } = useAuth()
 
+  const interestedGameIds = new Set(
+    (interestsQuery.data ?? [])
+      .filter((item: GameInterest) => item.isInterested)
+      .map((item: GameInterest) => item.gameId)
+  )
+
+  const availableGames = (gamesQuery.data ?? []).filter((game: Game) =>
+    interestedGameIds.has(game.gameId)
+  )
+
   useEffect(() => {
-    if (!selectedGameId && gamesQuery.data?.length) {
-      setSelectedGameId(gamesQuery.data[0].gameId)
+    if (!availableGames.length) {
+      setSelectedGameId(undefined)
+      return
     }
-  }, [gamesQuery.data, selectedGameId])
+
+    const hasValidSelection = availableGames.some((game: Game) => game.gameId === selectedGameId)
+    if (!hasValidSelection) {
+      setSelectedGameId(availableGames[0].gameId)
+    }
+  }, [availableGames, selectedGameId])
 
   useEffect(() => {
     setSelectedSlotId(undefined)
@@ -60,7 +78,7 @@ export const GamesPage = () => {
     }
   }, [userId])
 
-  const selectedGame = (gamesQuery.data ?? []).find((game: Game) => game.gameId === selectedGameId)
+  const selectedGame = availableGames.find((game: Game) => game.gameId === selectedGameId)
   const maxPlayersPerSlot = selectedGame?.maxPlayersPerSlot ?? 0
   const isInterested = (interestsQuery.data ?? []).find((item: GameInterest) => item.gameId === selectedGameId)?.isInterested
 
@@ -119,6 +137,16 @@ export const GamesPage = () => {
       <Header
         title="Games"
         description="Pick a game, see today's slots, and request a time that works for you."
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" onClick={() => navigate('/games/requests')}>
+              My requests
+            </Button>
+            <Button type="button" onClick={() => navigate('/games/upcoming')}>
+              Upcoming bookings
+            </Button>
+          </div>
+        }
       />
 
       <Card className="space-y-4">
@@ -132,7 +160,7 @@ export const GamesPage = () => {
           <p className="text-sm text-red-600">Unable to load games right now.</p>
         ) : null}
 
-        {gamesQuery.data?.length ? (
+        {availableGames.length ? (
           <div className="grid gap-4 md:grid-cols-2">
             <Select
               label="Select a game"
@@ -142,7 +170,7 @@ export const GamesPage = () => {
               <option value="" disabled>
                 Choose a game
               </option>
-              {(gamesQuery.data ?? []).map((game: Game) => (
+              {availableGames.map((game: Game) => (
                 <option key={game.gameId} value={game.gameId}>
                   {game.gameName}
                 </option>
@@ -161,6 +189,11 @@ export const GamesPage = () => {
               )}
             </div>
           </div>
+        ) : !gamesQuery.isLoading && !gamesQuery.isError ? (
+          <EmptyState
+            title="No interested games"
+            description="Add game interests in your profile to request slots."
+          />
         ) : null}
       </Card>
 

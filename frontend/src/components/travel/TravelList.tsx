@@ -22,6 +22,7 @@ interface TravelListProps {
   onDelete: (travelId: number) => void
   onCancelEdit: () => void
   onViewDocuments: (travelId: number) => void
+  onViewExpenses: (travelId: number) => void
   isUpdating: boolean
   employeeOptions: EmployeeOption[]
   onSearch: (query: string) => void
@@ -40,6 +41,7 @@ export const TravelList = ({
   onDelete,
   onCancelEdit,
   onViewDocuments,
+  onViewExpenses,
   isUpdating,
   employeeOptions,
   onSearch,
@@ -91,6 +93,13 @@ export const TravelList = ({
                 onClick={() => onViewDocuments(travel.travelId)}
               >
                 View documents
+              </button>
+              <button
+                className="text-sm font-semibold text-brand-600 hover:text-brand-700"
+                type="button"
+                onClick={() => onViewExpenses(travel.travelId)}
+              >
+                View expenses
               </button>
               {isHr ? (
                 <>
