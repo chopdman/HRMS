@@ -209,7 +209,58 @@ public static class ModelBuilderExtensions
             .HasIndex(h => new { h.UserId, h.GameId, h.CycleStartDate, h.CycleEndDate })
             .IsUnique();
 
-      
+       modelBuilder.Entity<JobOpening>()
+            .HasOne(j => j.Poster)
+            .WithMany()
+            .HasForeignKey(j => j.PostedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<JobShare>()
+            .HasOne(s => s.Job)
+            .WithMany()
+            .HasForeignKey(s => s.JobId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<JobShare>()
+            .HasOne(s => s.Sharer)
+            .WithMany()
+            .HasForeignKey(s => s.SharedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Referral>()
+            .HasOne(r => r.Job)
+            .WithMany()
+            .HasForeignKey(r => r.JobId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Referral>()
+            .HasOne(r => r.Referrer)
+            .WithMany()
+            .HasForeignKey(r => r.ReferredBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Referral>()
+            .HasOne(r => r.StatusUpdater)
+            .WithMany()
+            .HasForeignKey(r => r.StatusUpdatedBy)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ReferralStatusLog>()
+            .HasOne(l => l.Referral)
+            .WithMany()
+            .HasForeignKey(l => l.ReferralId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ReferralStatusLog>()
+            .HasOne(l => l.ChangedBy)
+            .WithMany()
+            .HasForeignKey(l => l.ChangedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<GlobalConfig>()
+            .HasIndex(c => c.ConfigField)
+            .IsUnique();
+
         return modelBuilder;
     }
 }

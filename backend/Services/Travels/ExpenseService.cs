@@ -143,7 +143,7 @@ public class ExpenseService
             var hrUsers = await _users.GetUsersByRoleIdAsync(hrRoleId.Value);
 
             var title = "Expense submitted";
-            var message = $"Expense #{expense.ExpenseId} has been submitted for review.";
+            var message = $"Expense #{expense?.Travel?.TravelName} has been submitted for review.";
 
             await _notifications.CreateForUsersAsync(hrUsers.Select(u => u.UserId), title, message);
 
