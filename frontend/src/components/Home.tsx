@@ -16,7 +16,7 @@ const linkBase =
 const linkActive = "bg-(--color-bg) text-(--color-dark)";
 
 export const Home = () => {
-  const { logout, role, fullName, email } = useAuth();
+  const { logout, role } = useAuth();
   const isManager = role === "Manager";
   const isHr = role === "HR";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,6 +58,14 @@ export const Home = () => {
         }
       >
         Organization chart
+      </NavLink>
+          <NavLink
+        to="/jobs"
+        className={({ isActive }) =>
+          `${linkBase} ${isActive ? linkActive : ""}`
+        }
+      >
+        Job Referral
       </NavLink>
       <NavLink
         to="/games"
