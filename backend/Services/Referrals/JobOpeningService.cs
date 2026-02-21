@@ -68,19 +68,14 @@ namespace backend.Services.Referrals
             {
                 throw new ArgumentException("Job opening not found.");
             }
-              if (dto.JobDescriptionFile is not null)
-            {
-                var uploadResult = await _cloudinary.UploadAsync(dto.JobDescriptionFile, "referrals/jd");
-                opening.JobDescriptionPath = uploadResult.Url;
-            }
-            
+
             opening.JobTitle = dto.JobTitle;
             opening.Department = dto.Department;
             opening.Location = dto.Location;
             opening.JobType = dto.JobType;
             opening.ExperienceRequired = dto.ExperienceRequired;
             opening.JobSummary = dto.JobSummary;
-            // opening.JobDescriptionPath = dto.JobDescriptionPath;
+            opening.JobDescriptionPath = dto.JobDescriptionPath;
             opening.HrOwnerEmail = dto.HrOwnerEmail;
             opening.CvReviewerEmails = SerializeEmails(dto.CvReviewerEmails);
             opening.IsActive = dto.IsActive;

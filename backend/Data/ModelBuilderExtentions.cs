@@ -2,6 +2,7 @@ using backend.Entities.Common;
 using backend.Entities.Games;
 using backend.Entities.Referrals;
 using backend.Entities.Travels;
+using backend.Entities.Achievements;
 using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data;
@@ -260,6 +261,18 @@ public static class ModelBuilderExtensions
         modelBuilder.Entity<GlobalConfig>()
             .HasIndex(c => c.ConfigField)
             .IsUnique();
+
+        modelBuilder.Entity<RemovedContent>()
+            .HasOne(r => r.OriginalAuthor)
+            .WithMany()
+            .HasForeignKey(r => r.AuthorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<RemovedContent>()
+            .HasOne(r => r.Moderator)
+            .WithMany()
+            .HasForeignKey(r => r.DeletedBy)
+            .OnDelete(DeleteBehavior.NoAction);
 
         return modelBuilder;
     }
