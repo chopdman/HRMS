@@ -6,6 +6,8 @@ import { useTeamMembers } from '../hooks/useManager'
 
 export const TeamMembersPage = () => {
   const { data, isLoading, isError } = useTeamMembers()
+  const cardGridClass =
+    'grid gap-4 grid-cols-[repeat(auto-fill,minmax(280px,320px))] justify-center sm:justify-start'
 
   return (
     <section className="space-y-6">
@@ -24,8 +26,8 @@ export const TeamMembersPage = () => {
       ) : null}
 
       {data?.length ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          {data.map((member) => (
+        <div className={cardGridClass}>
+          {data.map((member:any) => (
             <Card key={member.id} className="space-y-2">
               <div>
                 <h3 className="text-base font-semibold text-slate-900">{member.fullName}</h3>

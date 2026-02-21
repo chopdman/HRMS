@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useLocation, useNavigate, type Location } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Input } from '../components/ui/Input'
@@ -28,10 +27,8 @@ export const LoginPage = () => {
     }
   })
 
-  const redirectTo = useMemo(() => {
-    const state = location.state as { from?: Location }
-    return state?.from?.pathname ?? '/'
-  }, [location.state])
+  const state = location.state as { from?: Location }
+  const redirectTo = state?.from?.pathname ?? '/'
 
   const onSubmit = async (values: LoginFormValues) => {
     try {

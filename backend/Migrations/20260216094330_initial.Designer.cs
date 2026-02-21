@@ -12,7 +12,7 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260214200115_initial")]
+    [Migration("20260216094330_initial")]
     partial class initial
     {
         /// <inheritdoc />
@@ -231,6 +231,324 @@ namespace backend.Migrations
                     b.ToTable("user_refresh_tokens");
                 });
 
+            modelBuilder.Entity("backend.Entities.Games.Game", b =>
+                {
+                    b.Property<long>("GameId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_game_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("GameId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("GameName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("game_name");
+
+                    b.Property<int>("MaxPlayersPerSlot")
+                        .HasColumnType("int")
+                        .HasColumnName("max_players_per_slot");
+
+                    b.Property<TimeSpan>("OperatingHoursEnd")
+                        .HasColumnType("time")
+                        .HasColumnName("operating_hours_end");
+
+                    b.Property<TimeSpan>("OperatingHoursStart")
+                        .HasColumnType("time")
+                        .HasColumnName("operating_hours_start");
+
+                    b.Property<int>("SlotDurationMinutes")
+                        .HasColumnType("int")
+                        .HasColumnName("slot_duration_minutes");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("GameId");
+
+                    b.HasIndex("GameName")
+                        .IsUnique();
+
+                    b.ToTable("games");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameBooking", b =>
+                {
+                    b.Property<long>("BookingId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_booking_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("BookingId"));
+
+                    b.Property<DateTime>("BookingDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("booking_date");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("cancelled_at");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("CreatedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_created_by");
+
+                    b.Property<long>("GameId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_game_id");
+
+                    b.Property<TimeSpan>("SlotEndTime")
+                        .HasColumnType("time")
+                        .HasColumnName("slot_end_time");
+
+                    b.Property<long>("SlotId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_slot_id");
+
+                    b.Property<TimeSpan>("SlotStartTime")
+                        .HasColumnType("time")
+                        .HasColumnName("slot_start_time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("status");
+
+                    b.HasKey("BookingId");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("SlotId");
+
+                    b.ToTable("game_bookings");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameBookingParticipant", b =>
+                {
+                    b.Property<long>("ParticipantId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_participant_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ParticipantId"));
+
+                    b.Property<long>("BookingId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_booking_id");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("joined_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_user_id");
+
+                    b.HasKey("ParticipantId");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("game_booking_participants");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameHistory", b =>
+                {
+                    b.Property<long>("StatId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_stat_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("StatId"));
+
+                    b.Property<DateTime>("CycleEndDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("cycle_end_date");
+
+                    b.Property<DateTime>("CycleStartDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("cycle_start_date");
+
+                    b.Property<long>("GameId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_game_id");
+
+                    b.Property<DateTime?>("LastPlayedDate")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("last_played_date");
+
+                    b.Property<int>("SlotsPlayed")
+                        .HasColumnType("int")
+                        .HasColumnName("slots_played");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_user_id");
+
+                    b.HasKey("StatId");
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("UserId", "GameId", "CycleStartDate", "CycleEndDate")
+                        .IsUnique();
+
+                    b.ToTable("game_history");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlot", b =>
+                {
+                    b.Property<long>("SlotId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_slot_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("SlotId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("end_time");
+
+                    b.Property<long>("GameId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_game_id");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_time");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("SlotId");
+
+                    b.HasIndex("GameId");
+
+                    b.ToTable("game_slots");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlotRequest", b =>
+                {
+                    b.Property<long>("RequestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_request_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestId"));
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("requested_at");
+
+                    b.Property<long>("RequestedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_requested_by");
+
+                    b.Property<long>("SlotId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_slot_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("RequestId");
+
+                    b.HasIndex("RequestedBy");
+
+                    b.HasIndex("SlotId");
+
+                    b.ToTable("game_slot_requests");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlotRequestParticipant", b =>
+                {
+                    b.Property<long>("RequestParticipantId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_request_participant_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("RequestParticipantId"));
+
+                    b.Property<long>("RequestId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_request_id");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_user_id");
+
+                    b.HasKey("RequestParticipantId");
+
+                    b.HasIndex("RequestId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("game_slot_request_participants");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.UserGameInterest", b =>
+                {
+                    b.Property<long>("InterestId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_interest_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("InterestId"));
+
+                    b.Property<long>("GameId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_game_id");
+
+                    b.Property<bool>("IsInterested")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_interested");
+
+                    b.Property<DateTime>("RegisteredAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("registered_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_user_id");
+
+                    b.HasKey("InterestId");
+
+                    b.HasIndex("GameId");
+
+                    b.HasIndex("UserId", "GameId")
+                        .IsUnique();
+
+                    b.ToTable("user_game_interests");
+                });
+
             modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
                 {
                     b.Property<long>("ExpenseId")
@@ -281,8 +599,9 @@ namespace backend.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("reviewed_by");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int")
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("status");
 
                     b.Property<DateTime?>("SubmittedAt")
@@ -363,9 +682,10 @@ namespace backend.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("file_path");
 
-                    b.Property<int?>("FileType")
+                    b.Property<string>("FileType")
+                        .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("int")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("file_type");
 
                     b.Property<DateTime>("UploadedAt")
@@ -558,6 +878,139 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("backend.Entities.Games.GameBooking", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Games.Game", "Game")
+                        .WithMany("Bookings")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Games.GameSlot", "Slot")
+                        .WithMany("Bookings")
+                        .HasForeignKey("SlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("Game");
+
+                    b.Navigation("Slot");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameBookingParticipant", b =>
+                {
+                    b.HasOne("backend.Entities.Games.GameBooking", "Booking")
+                        .WithMany("Participants")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameHistory", b =>
+                {
+                    b.HasOne("backend.Entities.Games.Game", "Game")
+                        .WithMany("Histories")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlot", b =>
+                {
+                    b.HasOne("backend.Entities.Games.Game", "Game")
+                        .WithMany("Slots")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlotRequest", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "Requester")
+                        .WithMany()
+                        .HasForeignKey("RequestedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Games.GameSlot", "Slot")
+                        .WithMany("Requests")
+                        .HasForeignKey("SlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Requester");
+
+                    b.Navigation("Slot");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlotRequestParticipant", b =>
+                {
+                    b.HasOne("backend.Entities.Games.GameSlotRequest", "Request")
+                        .WithMany("Participants")
+                        .HasForeignKey("RequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Request");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.UserGameInterest", b =>
+                {
+                    b.HasOne("backend.Entities.Games.Game", "Game")
+                        .WithMany()
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
                 {
                     b.HasOne("backend.Entities.Travels.ExpenseCategory", "Category")
@@ -677,6 +1130,32 @@ namespace backend.Migrations
                     b.Navigation("TravelDocumentsUploaded");
 
                     b.Navigation("TravelsCreated");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.Game", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("Histories");
+
+                    b.Navigation("Slots");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameBooking", b =>
+                {
+                    b.Navigation("Participants");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlot", b =>
+                {
+                    b.Navigation("Bookings");
+
+                    b.Navigation("Requests");
+                });
+
+            modelBuilder.Entity("backend.Entities.Games.GameSlotRequest", b =>
+                {
+                    b.Navigation("Participants");
                 });
 
             modelBuilder.Entity("backend.Entities.Travels.Expense", b =>

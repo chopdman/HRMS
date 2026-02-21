@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
@@ -31,6 +31,21 @@ import {
 } from "../../components/travel/TravelDocumentList";
 import { TravelDocumentUploadForm } from "../../components/travel/TravelDocumentUploadForm";
 import { TravelDocumentFiltersPanel } from "../../components/travel/TravelDocumentFiltersPanel";
+
+const allowedDocumentFileMessage = "Only PDF and JPG/JPEG files are allowed.";
+
+const isAllowedDocumentFile = (file: File) => {
+  const fileType = file.type.toLowerCase();
+  const extension = file.name.toLowerCase().split(".").pop() ?? "";
+
+  return (
+    fileType === "application/pdf" ||
+    fileType === "image/jpeg" ||
+    extension === "pdf" ||
+    extension === "jpg" ||
+    extension === "jpeg"
+  );
+};
 
 export const DocumentsPage = () => {
   const queryClient = useQueryClient();
@@ -74,13 +89,10 @@ export const DocumentsPage = () => {
     canFetchTravels,
   );
   const createdTravelsQuery = useCreatedTravels(isHr);
-  const normalizedFilters = useMemo(
-    () => ({
-      travelId: filters.travelId ? Number(filters.travelId) : undefined,
-      employeeId: filters.employeeId ? Number(filters.employeeId) : undefined,
-    }),
-    [filters],
-  );
+  const normalizedFilters = {
+    travelId: filters.travelId ? Number(filters.travelId) : undefined,
+    employeeId: filters.employeeId ? Number(filters.employeeId) : undefined,
+  };
 
   const { data, isLoading, isError, refetch } =
     useTravelDocuments(normalizedFilters);
@@ -88,21 +100,15 @@ export const DocumentsPage = () => {
   const updateMutation = useUpdateTravelDocument();
   const deleteMutation = useDeleteTravelDocument();
 
-  const employeeOptions = useMemo(() => {
-    if (isHr) {
-      return employeesQuery.data ?? [];
-    }
-
-    if (isManager) {
-      return (teamMembersQuery.data ?? []).map((member: any) => ({
-        id: member.id,
-        fullName: member.fullName,
-        email: member.email,
-      }));
-    }
-
-    return [];
-  }, [employeesQuery.data, isHr, isManager, teamMembersQuery.data]);
+  const employeeOptions = isHr
+    ? (employeesQuery.data ?? [])
+    : isManager
+      ? (teamMembersQuery.data ?? []).map((member: any) => ({
+          id: member.id,
+          fullName: member.fullName,
+          email: member.email,
+        }))
+      : [];
 
   const listLoading = isHr
     ? employeesQuery.isLoading
@@ -126,7 +132,7 @@ export const DocumentsPage = () => {
   );
 
   const uploadEmployeeOptions = isHr
-    ? uploadAssigneesQuery.data ?? []
+    ? (uploadAssigneesQuery.data ?? [])
     : employeeOptions;
 
   useEffect(() => {
@@ -144,8 +150,19 @@ export const DocumentsPage = () => {
 
   const onUpload = async (values: DocumentFormValues) => {
     setMessage("");
+    if (!values.travelId || Number(values.travelId) <= 0) {
+      setMessage("Please select a valid travel.");
+      return;
+    }
+
+    if (!values.documentType?.trim()) {
+      setMessage("Document type is required.");
+      return;
+    }
+
     const file = values.file?.item(0);
     if (!file) {
+      setMessage("File is required.");
       return;
     }
 
@@ -185,6 +202,11 @@ export const DocumentsPage = () => {
     field: "documentType" | "file",
     value: string | File | null,
   ) => {
+    if (field === "file" && value instanceof File && !isAllowedDocumentFile(value)) {
+      setMessage(allowedDocumentFileMessage);
+      return;
+    }
+
     setEditDocs((prev) => ({
       ...prev,
       [documentId]: {
@@ -222,6 +244,7 @@ export const DocumentsPage = () => {
   };
 
   const handleDeleteDoc = async (documentId: number) => {
+    if (!globalThis.confirm("Delete this document?")) return;
     await deleteMutation.mutateAsync(documentId);
     await queryClient.invalidateQueries({ queryKey: ["travel-documents"] });
     await refetch();
@@ -256,9 +279,12 @@ export const DocumentsPage = () => {
         control={filterForm.control}
         employeeOptions={employeeOptions}
         onSearch={setSearchQuery}
+        showEmployeeSearch={role !== "Employee"}
         isLoadingOptions={listLoading}
         travelOptions={travelOptionsQuery.data}
-        selectedTravelId={filters.travelId ? Number(filters.travelId) : undefined}
+        selectedTravelId={
+          filters.travelId ? Number(filters.travelId) : undefined
+        }
         onEmployeeChange={() => filterForm.setValue("travelId", undefined)}
         onTravelChange={(value) => filterForm.setValue("travelId", value)}
       />

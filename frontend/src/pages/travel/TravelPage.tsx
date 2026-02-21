@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { createSearchParams, useNavigate } from "react-router-dom";
 import { Header } from "../../components/Header";
@@ -12,6 +12,7 @@ import { useTeamMembers } from "../../hooks/travel/useManager";
 import {
   useAssignedTravels,
   useCreatedTravels,
+  useTravelAssignees,
   useTravelById,
 } from "../../hooks/travel/useTravel";
 import {
@@ -59,6 +60,10 @@ export const TravelsPage = () => {
     editingTravelId ?? undefined,
     Boolean(editingTravelId) && isHr,
   );
+  const travelAssigneesQuery = useTravelAssignees(
+    editingTravelId ?? undefined,
+    Boolean(editingTravelId) && isHr,
+  );
   const createTravel = useCreateTravel();
   const updateTravel = useUpdateTravel();
   const deleteTravel = useDeleteTravel();
@@ -82,6 +87,8 @@ export const TravelsPage = () => {
   const isTravelsLoading = activeTravelsQuery.isLoading;
   const isTravelsError = activeTravelsQuery.isError;
 
+  // const editTotalClaimedAmount = travelDetailQuery.data?.totalClaimedAmount ?? null;
+
   const createForm = useForm<TravelCreateFormValues>({
     defaultValues: {
       travelName: "",
@@ -104,21 +111,25 @@ export const TravelsPage = () => {
     },
   });
 
-  const employeeOptions = useMemo(() => {
-    if (isHr) {
-      return employeesQuery.data ?? [];
-    }
+  const employeeOptions = isHr
+    ? employeesQuery.data ?? []
+    : isManager
+      ? (teamMembersQuery.data ?? []).map((member:any) => ({
+          id: member.id,
+          fullName: member.fullName,
+          email: member.email,
+        }))
+      : [];
 
-    if (isManager) {
-      return (teamMembersQuery.data ?? []).map((member) => ({
-        id: member.id,
-        fullName: member.fullName,
-        email: member.email,
-      }));
+  const editEmployeeOptions = [
+    ...employeeOptions,
+    ...(travelAssigneesQuery.data ?? []),
+  ].reduce((accumulator, option) => {
+    if (!accumulator.some((item:any) => item.id === option.id)) {
+      accumulator.push(option);
     }
-
-    return [];
-  }, [employeesQuery.data, isHr, isManager, teamMembersQuery.data]);
+    return accumulator;
+  }, [] as typeof employeeOptions);
 
   const onCreateTravel = async (values: TravelCreateFormValues) => {
     setMessage("");
@@ -129,6 +140,11 @@ export const TravelsPage = () => {
 
     if (!values.assignments?.length) {
       setMessage("Enter at least one employee ID to assign.");
+      return;
+    }
+
+    if (new Date(values.startDate) > new Date(values.endDate)) {
+      setMessage("End date must be on or after start date.");
       return;
     }
 
@@ -190,6 +206,16 @@ export const TravelsPage = () => {
       return;
     }
 
+    if (!values.assignments?.length) {
+      setEditMessage("At least one employee must be assigned.");
+      return;
+    }
+
+    if (new Date(values.startDate) > new Date(values.endDate)) {
+      setEditMessage("End date must be on or after start date.");
+      return;
+    }
+
     await updateTravel.mutateAsync({
       travelId: editingTravelId,
       travelName: values.travelName,
@@ -207,7 +233,7 @@ export const TravelsPage = () => {
   };
 
   const onDeleteTravel = async (travelId: number) => {
-    if (!globalThis.confirm("Delete this travel plan? This cannot be undone.")) {
+    if (!globalThis.confirm("Delete this travel plan?")) {
       return;
     }
 
@@ -222,6 +248,17 @@ export const TravelsPage = () => {
     }
     navigate({
       pathname: "/documents",
+      search: createSearchParams(params).toString(),
+    });
+  };
+
+  const goToExpenses = (travelId: number) => {
+    const params: Record<string, string> = { travelId: String(travelId) };
+    if (!isEmployee && normalizedEmployeeId) {
+      params.employeeId = String(normalizedEmployeeId);
+    }
+    navigate({
+      pathname: "/expenses",
       search: createSearchParams(params).toString(),
     });
   };
@@ -277,10 +314,12 @@ export const TravelsPage = () => {
           onDelete={onDeleteTravel}
           onCancelEdit={() => setEditingTravelId(null)}
           onViewDocuments={goToDocuments}
+          onViewExpenses={goToExpenses}
           isUpdating={updateTravel.isPending}
-          employeeOptions={employeeOptions}
+          employeeOptions={editEmployeeOptions}
           onSearch={setSearchQuery}
           isLoadingOptions={listLoading}
+          isEditLoading={travelDetailQuery.isLoading || travelAssigneesQuery.isLoading}
         />
       ) : null}
 

@@ -55,6 +55,47 @@ namespace backend.Repositories.Travels
             _db.TravelDocuments.Remove(document);
             await _db.SaveChangesAsync();
         }
+
+        public async Task<IReadOnlyCollection<TravelDocument>> GetForEmployeeAsync(long employeeId, IReadOnlyCollection<long> assignedTravelIds, long? travelId)
+        {
+            var query = _db.TravelDocuments
+                .AsNoTracking()
+                .Where(d =>
+                    (d.EmployeeId == employeeId) ||
+                    (d.OwnerType == DocumentOwnerType.HR && d.EmployeeId == null && assignedTravelIds.Contains(d.TravelId))
+                )
+                .AsQueryable();
+ 
+            if (travelId.HasValue)
+            {
+                query = query.Where(d => d.TravelId == travelId.Value);
+            }
+ 
+            return await query
+                .OrderByDescending(d => d.UploadedAt)
+                .ToListAsync();
+        }
+ 
+        public async Task<IReadOnlyCollection<TravelDocument>> GetForManagerAsync(long employeeId, IReadOnlyCollection<long> assignedTravelIds, long? travelId)
+        {
+            var query = _db.TravelDocuments
+                .AsNoTracking()
+                .Where(d =>
+                    (d.EmployeeId == employeeId) ||
+                    (d.OwnerType == DocumentOwnerType.HR && d.EmployeeId == null && assignedTravelIds.Contains(d.TravelId))
+                )
+                .AsQueryable();
+ 
+            if (travelId.HasValue)
+            {
+                query = query.Where(d => d.TravelId == travelId.Value);
+            }
+ 
+            return await query
+                .OrderByDescending(d => d.UploadedAt)
+                .ToListAsync();
+        }
+ 
  
     }
 }

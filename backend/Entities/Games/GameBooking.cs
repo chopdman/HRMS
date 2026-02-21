@@ -16,6 +16,10 @@ namespace backend.Entities.Games
         public long GameId { get; set; }
 
         [Required]
+        [Column("fk_slot_id")]
+        public long SlotId { get; set; }
+
+        [Required]
         [Column("booking_date")]
         public DateTime BookingDate { get; set; }
 
@@ -43,8 +47,13 @@ namespace backend.Entities.Games
         [ForeignKey("GameId")]
         public virtual Game? Game { get; set; }
 
+        [ForeignKey("SlotId")]
+        public virtual GameSlot? Slot { get; set; }
+
         [ForeignKey("CreatedBy")]
         public virtual User? Creator { get; set; }
+
+        public ICollection<GameBookingParticipant> Participants { get; set; } = new List<GameBookingParticipant>();
 
     }
 

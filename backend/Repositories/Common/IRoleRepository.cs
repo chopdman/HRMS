@@ -7,6 +7,6 @@ public interface IRoleRepository
 {
     Task<RoleResponseDto> CreateRoleAsync(RoleCreateDto dto);
     Task<IReadOnlyCollection<RoleResponseDto>> GetRolesAsync();
-
     Task<RoleResponseDto> GetRoleByIdAsync(long roleId);
+    Task<long?> GetRoleIdByNameAsync(string roleName);
 }

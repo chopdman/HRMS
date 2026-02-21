@@ -3,6 +3,8 @@ import { Input } from '../ui/Input'
 import { formatDate } from '../../utils/format'
 import type { TravelDocument } from '../../types/document'
 
+const allowedDocumentFileAccept = '.pdf,.jpg,.jpeg,application/pdf,image/jpeg'
+
 export type TravelDocumentEdits = Record<
   number,
   {
@@ -40,14 +42,14 @@ export const TravelDocumentList = ({
   isSaving,
   isDeleting
 }: TravelDocumentListProps) => (
-  <div className="space-y-3">
+  <div className="grid gap-3 grid-cols-[repeat(auto-fill,minmax(280px,320px))] justify-center sm:justify-start">
     {documents.map((doc) => {
       const isEditing = Boolean(editDocs[doc.documentId])
 
       return (
         <Card
           key={doc.documentId}
-          className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
+          className="flex flex-col gap-2  "
         >
           <div>
             <p className="text-sm font-semibold text-slate-900">{doc.documentType}</p>
@@ -72,6 +74,7 @@ export const TravelDocumentList = ({
                 <Input
                   label="Replace file"
                   type="file"
+                  accept={allowedDocumentFileAccept}
                   onChange={(event) =>
                     onEditChange(doc.documentId, 'file', event.target.files?.item(0) ?? null)
                   }

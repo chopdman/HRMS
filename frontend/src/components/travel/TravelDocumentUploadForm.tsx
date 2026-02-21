@@ -1,5 +1,5 @@
 import { type UseFormReturn } from 'react-hook-form'
-import { AsyncSearchableSelect, SearchableSelect } from '../ui/Combobox'
+import {  SearchableSelect } from '../ui/SearchableSelect'
 import { Card } from '../ui/Card'
 import { Input } from '../ui/Input'
 import { Button } from '../ui/Button'
@@ -7,6 +7,22 @@ import { formatDate } from '../../utils/format'
 import type { EmployeeOption } from '../../types/employee'
 import type { TravelAssigned } from '../../types/travel'
 import type { DocumentFormValues } from '../../types/travel-document-forms'
+
+const allowedDocumentFileAccept = '.pdf,.jpg,.jpeg,application/pdf,image/jpeg'
+const allowedDocumentFileMessage = 'Only PDF and JPG/JPEG files are allowed.'
+
+const isAllowedDocumentFile = (file: File) => {
+  const fileType = file.type.toLowerCase()
+  const extension = file.name.toLowerCase().split('.').pop() ?? ''
+
+  return (
+    fileType === 'application/pdf' ||
+    fileType === 'image/jpeg' ||
+    extension === 'pdf' ||
+    extension === 'jpg' ||
+    extension === 'jpeg'
+  )
+}
 
 interface TravelDocumentUploadFormProps {
   form: UseFormReturn<DocumentFormValues>
@@ -29,7 +45,6 @@ export const TravelDocumentUploadForm = ({
   onSubmit,
   isHr,
   employeeOptions,
-  onSearch,
   isLoadingOptions,
   hrTravels,
   isLoadingHrTravels,
@@ -58,7 +73,8 @@ export const TravelDocumentUploadForm = ({
           type="hidden"
           {...register('travelId', {
             required: 'Travel is required.',
-            valueAsNumber: true
+            valueAsNumber: true,
+            min: { value: 1, message: 'Travel is required.' }
           })}
         />
         {isHr && watch('travelId') ? (
@@ -120,7 +136,8 @@ export const TravelDocumentUploadForm = ({
             error={errors.travelId?.message}
             {...register('travelId', {
               required: 'Travel ID is required.',
-              valueAsNumber: true
+              valueAsNumber: true,
+              min: { value: 1, message: 'Travel ID must be greater than 0.' }
             })}
           />
         )}
@@ -128,18 +145,34 @@ export const TravelDocumentUploadForm = ({
           label="Document type"
           error={errors.documentType?.message}
           {...register('documentType', {
-            required: 'Document type is required.'
+            required: 'Document type is required.',
+            validate: (value) => value.trim().length > 0 || 'Document type is required.'
           })}
         />
         <Input
           label="File"
           type="file"
+          accept={allowedDocumentFileAccept}
           error={errors.file?.message}
-          {...register('file', { required: 'File is required.' })}
+          {...register('file', {
+            required: 'File is required.',
+            validate: (value) => {
+              if ((value?.length ?? 0) === 0) {
+                return 'File is required.'
+              }
+
+              const file = value?.item(0)
+              if (!file) {
+                return 'File is required.'
+              }
+
+              return isAllowedDocumentFile(file) || allowedDocumentFileMessage
+            }
+          })}
         />
         <div className="md:col-span-2">
           <Button
-            className="inline-flex w-full items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-black hover:bg-brand-700 disabled:opacity-70"
+            className="inline-flex w-full items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold bg-(--color-primary) hover:bg-brand-700 disabled:opacity-70"
             type="submit"
             disabled={isUploading}
           >

@@ -1,31 +1,35 @@
-using backend.Data;
 using backend.Repositories.Travels;
+using backend.Repositories.Common;
 using backend.Services.Common;
 using backend.Entities.Travels;
 using backend.Config;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using backend.DTO.Travels;
 
 namespace backend.Services.Travels;
 
 public class ExpenseService
 {
-    private readonly AppDbContext _db;
     private readonly IExpenseRepository _expenses;
     private readonly IExpenseProofRepository _documents;
+    private readonly ITravelRepository _travels;
+    private readonly IUserRepository _users;
+    private readonly IRoleRepository _roles;
+    private readonly IExpenseCategoryRepository _categories;
     private readonly CloudinaryService _cloudinary;
     private readonly NotificationService _notifications;
     // private readonly EmailService _email;
     // private readonly IOptions<EmailSettings> _emailSettings;
 
-    public ExpenseService(AppDbContext db, IExpenseRepository expenses, IExpenseProofRepository documents, CloudinaryService cloudinary, NotificationService notifications
+    public ExpenseService(IExpenseRepository expenses, IExpenseProofRepository documents, ITravelRepository travels, IUserRepository users, IRoleRepository roles, IExpenseCategoryRepository categories, CloudinaryService cloudinary, NotificationService notifications
     // , EmailService email, IOptions<EmailSettings> emailSettings
     )
     {
-        _db = db;
         _expenses = expenses;
         _documents = documents;
+        _travels = travels;
+        _users = users;
+        _roles = roles;
+        _categories = categories;
         _cloudinary = cloudinary;
         _notifications = notifications;
         // _email = email;
@@ -34,9 +38,7 @@ public class ExpenseService
 
     public async Task<ExpenseResponseDto> CreateDraftAsync(ExpenseCreateDto dto, long currentUserId)
     {
-        var assignment = await _db.TravelAssignments
-            .Include(a => a.Travel)
-            .FirstOrDefaultAsync(a => a.AssignmentId == dto.AssignId);
+        var assignment = await _travels.GetAssignmentWithTravelAsync(dto.AssignId);
 
         if (assignment is null)
         {
@@ -119,6 +121,14 @@ public class ExpenseService
             throw new ArgumentException("At least one proof document is required.");
         }
 
+        var travel = await _travels.GetByIdAsync(expense.TravelId);
+        if (travel is null)
+        {
+            throw new ArgumentException("Travel not found.");
+        }
+
+        ValidateExpenseSubmissionWindow(DateTime.UtcNow, travel);
+
 
         await ValidateAmountAsync(expense.CategoryId, expense.Amount);
 
@@ -127,17 +137,10 @@ public class ExpenseService
 
         await _expenses.SaveAsync();
 
-        var hrRoleId = await _db.Roles
-            .Where(r => r.Name == "HR")
-            .Select(r => r.RoleId)
-            .FirstOrDefaultAsync();
-
-        if (hrRoleId > 0)
+        var hrRoleId = await _roles.GetRoleIdByNameAsync("HR");
+        if (hrRoleId.HasValue && hrRoleId.Value > 0)
         {
-            var hrUsers = await _db.Users
-                .Where(u => u.RoleId == hrRoleId)
-                .Select(u => new { u.UserId, u.Email })
-                .ToListAsync();
+            var hrUsers = await _users.GetUsersByRoleIdAsync(hrRoleId.Value);
 
             var title = "Expense submitted";
             var message = $"Expense #{expense.ExpenseId} has been submitted for review.";
@@ -153,7 +156,6 @@ public class ExpenseService
 
         return Map(expense);
     }
-
     public async Task<ExpenseResponseDto> ReviewAsync(long expenseId, ExpenseReviewDto dto, long reviewerId)
     {
         if (dto.Status is not (ExpenseStatus.Approved or ExpenseStatus.Rejected))
@@ -177,7 +179,7 @@ public class ExpenseService
             throw new ArgumentException("Only submitted expenses can be reviewed.");
         }
 
-        var travel = await _db.Travels.FirstOrDefaultAsync(t => t.TravelId == expense.TravelId);
+        var travel = await _travels.GetByIdAsync(expense.TravelId);
         if (travel is null)
         {
             throw new ArgumentException("Travel not found.");
@@ -199,6 +201,8 @@ public class ExpenseService
         expense.ReviewedAt = DateTime.UtcNow;
 
         await _expenses.SaveAsync();
+
+
         return Map(expense);
     }
 
@@ -220,7 +224,7 @@ public class ExpenseService
             throw new ArgumentException("Only draft expenses can be updated.");
         }
 
-        var travel = await _db.Travels.FirstOrDefaultAsync(t => t.TravelId == expense.TravelId);
+        var travel = await _travels.GetByIdAsync(expense.TravelId);
         if (travel is null)
         {
             throw new ArgumentException("Travel not found.");
@@ -257,8 +261,7 @@ public class ExpenseService
             throw new ArgumentException("Only draft expenses can be deleted.");
         }
 
-        _db.Expenses.Remove(expense);
-        await _db.SaveChangesAsync();
+        await _expenses.DeleteAsync(expense);
     }
 
     public async Task DeleteProofAsync(long expenseId, long proofId, long currentUserId)
@@ -309,12 +312,18 @@ public class ExpenseService
         }
     }
 
+    private void ValidateExpenseSubmissionWindow(DateTime submittedAt, Travel travel)
+    {
+        var lastAllowed = travel.EndDate.AddDays(10);
+        if (submittedAt > lastAllowed)
+        {
+            throw new ArgumentException("Expense submission window has closed.");
+        }
+    }
+
     private async Task ValidateAmountAsync(long categoryId, decimal amount)
     {
-        var maxPerDay = await _db.ExpenseCategories
-            .Where(c => c.CategoryId == categoryId)
-            .Select(c => c.MaxAmountPerDay)
-            .FirstOrDefaultAsync();
+        var maxPerDay = await _categories.GetMaxAmountPerDayAsync(categoryId);
 
         if (maxPerDay <= 0)
         {
@@ -343,13 +352,16 @@ public class ExpenseService
             expense.ExpenseId,
             // expense.AssignId,
             expense.EmployeeId,
+            expense.Employee?.FullName,
             expense.CategoryId,
+            expense.Category?.CategoryName,
             expense.Amount,
             expense.Currency,
             expense.ExpenseDate,
             expense.Status,
             expense.SubmittedAt,
             expense.ReviewedBy,
+            expense.Reviewer?.FullName,
             expense.ReviewedAt,
             expense.HrRemarks,
             proofs);

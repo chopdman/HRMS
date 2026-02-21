@@ -1,8 +1,24 @@
-import { useForm,type UseFormReturn } from 'react-hook-form'
+import { type UseFormReturn } from 'react-hook-form'
 import { Input } from '../ui/Input'
 import { Select } from '../ui/Select'
-import { SearchableSelect } from '../ui/Combobox'
+import { SearchableSelect } from '../ui/SearchableSelect'
 import { formatDate } from '../../utils/format'
+
+const allowedExpenseProofAccept = '.pdf,.jpg,.jpeg,application/pdf,image/jpeg'
+const allowedExpenseProofMessage = 'Only PDF and JPG/JPEG files are allowed.'
+
+const isAllowedExpenseProofFile = (file: File) => {
+  const fileType = file.type.toLowerCase()
+  const extension = file.name.toLowerCase().split('.').pop() ?? ''
+
+  return (
+    fileType === 'application/pdf' ||
+    fileType === 'image/jpeg' ||
+    extension === 'pdf' ||
+    extension === 'jpg' ||
+    extension === 'jpeg'
+  )
+}
  
 export type ExpenseFormValues = {
   assignId?: number
@@ -27,7 +43,8 @@ interface ExpenseSubmitFormProps {
     | undefined
   isLoading: boolean
   isSubmitting: boolean
-  successMessage: string
+  submitMessage: string
+  submitMessageTone: 'success' | 'error'
 }
  
 export const ExpenseSubmitForm = ({
@@ -37,7 +54,8 @@ export const ExpenseSubmitForm = ({
   assignments,
   isLoading,
   isSubmitting,
-  successMessage
+  submitMessage,
+  submitMessageTone
 }: ExpenseSubmitFormProps) => {
   const {
     register,
@@ -58,7 +76,11 @@ export const ExpenseSubmitForm = ({
       <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit(onSubmit)}>
         <input
           type="hidden"
-          {...register('assignId', { required: 'Assignment is required.', valueAsNumber: true })}
+          {...register('assignId', {
+            required: 'Assignment is required.',
+            valueAsNumber: true,
+            min: { value: 1, message: 'Assignment is required.' }
+          })}
         />
         <SearchableSelect
           label="Assignment"
@@ -85,8 +107,13 @@ export const ExpenseSubmitForm = ({
         ) : null}
         <Select
           label="Category"
+          value={watch('categoryId') ?? ''}
           error={errors.categoryId?.message}
-          {...register('categoryId', { required: 'Category is required.', valueAsNumber: true })}
+          {...register('categoryId', {
+            required: 'Category is required.',
+            valueAsNumber: true,
+            min: { value: 1, message: 'Category is required.' }
+          })}
         >
           <option value="">Select category</option>
           {categories?.map((category) => (
@@ -109,7 +136,10 @@ export const ExpenseSubmitForm = ({
         <Input
           label="Currency"
           error={errors.currency?.message}
-          {...register('currency', { required: 'Currency is required.' })}
+          {...register('currency', {
+            required: 'Currency is required.',
+            validate: (value: string) => /^[A-Za-z]{3}$/.test(value.trim()) || 'Use a 3-letter currency code.'
+          })}
         />
         <Input
           label="Expense date"
@@ -117,7 +147,7 @@ export const ExpenseSubmitForm = ({
           error={errors.expenseDate?.message}
           {...register('expenseDate', {
             required: 'Date is required.',
-            validate: (value) => {
+            validate: (value: string) => {
               const assignment = assignments?.find((item) => item.assignId === Number(selectedAssignId))
  
               if (!assignment) {
@@ -141,8 +171,23 @@ export const ExpenseSubmitForm = ({
         <Input
           label="Proof file"
           type="file"
+          accept={allowedExpenseProofAccept}
           error={errors.proof?.message}
-          {...register('proof', { required: 'Proof file is required.' })}
+          {...register('proof', {
+            required: 'Proof file is required.',
+            validate: (value: FileList) => {
+              if ((value?.length ?? 0) === 0) {
+                return 'Proof file is required.'
+              }
+
+              const file = value?.item(0)
+              if (!file) {
+                return 'Proof file is required.'
+              }
+
+              return isAllowedExpenseProofFile(file) || allowedExpenseProofMessage
+            }
+          })}
         />
         <div className="md:col-span-2">
           <button
@@ -154,7 +199,11 @@ export const ExpenseSubmitForm = ({
           </button>
         </div>
       </form>
-      {successMessage ? <p className="text-sm text-emerald-600">{successMessage}</p> : null}
+      {submitMessage ? (
+        <p className={`text-sm ${submitMessageTone === 'error' ? 'text-red-600' : 'text-emerald-600'}`}>
+          {submitMessage}
+        </p>
+      ) : null}
     </div>
   )
 }

@@ -22,7 +22,7 @@ public class NotificationRepository : INotificationRepository
     public async Task<IReadOnlyCollection<Notification>> GetByUserAsync(long userId)
     {
         return await _db.Set<Notification>()
-            .Where(n => n.UserId == userId)
+            .Where(n => n.UserId == userId && n.IsRead == false)
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync();
     }

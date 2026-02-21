@@ -1,190 +1,46 @@
-using backend.Config;
-using backend.Data;
-using backend.DTO.Common;
 using backend.ExceptionHandler;
-using backend.Repositories.Common;
-using backend.Repositories.Travels;
-using backend.Services.Auth;
-using backend.Services.Common;
-using backend.Services.Travels;
+using backend.Extensions;
 using DotNetEnv;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
- 
+
 Env.Load();
- 
+
 var builder = WebApplication.CreateBuilder(args);
- 
+
 builder.Configuration.AddEnvironmentVariables();
- 
+
 var secretKey = builder.Configuration["JwtSettings:Secret"];
- 
+
 if (string.IsNullOrEmpty(secretKey))
 {
     throw new InvalidOperationException("JWT secret key is not configured.");
 }
 var dbUrl = Environment.GetEnvironmentVariable("DB_URL");
- 
+
 if (!string.IsNullOrWhiteSpace(dbUrl))
 {
     builder.Configuration["ConnectionStrings:DefaultConnection"] = dbUrl;
 }
- 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
- 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins("http://localhost:5173")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod().AllowCredentials();
-        });
-});
- 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    })
-    .ConfigureApiBehaviorOptions(setupAction =>
-    {
-        setupAction.InvalidModelStateResponseFactory = context =>
-        {
-            var errors = context.ModelState
-                .Where(entry => entry.Value?.Errors.Count > 0)
-                .ToDictionary(
-                    entry => entry.Key,
-                    entry => entry.Value!.Errors.Select(err => err.ErrorMessage).ToArray()
-                );
- 
-            var payload = new ApiResponse<object>
-            {
-                Success = false,
-                Code = StatusCodes.Status400BadRequest,
-                Error = "Validation failed.",
-                Data = errors
-            };
- 
-            return new BadRequestObjectResult(payload);
-        };
-    });
- 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
- 
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
-builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
-builder.Services.AddScoped<PasswordHasher>();
-builder.Services.AddScoped<TokenService>();
-builder.Services.AddScoped<TravelService>();
-builder.Services.AddScoped<RoleService>();
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<CloudinaryService>();
-builder.Services.AddScoped<TravelDocumentService>();
-builder.Services.AddScoped<ITravelRepository, TravelRepository>();
-builder.Services.AddScoped<ITravelDocumentRepository, TravelDocumentRepository>();
-builder.Services.AddScoped<IExpenseRepository, ExpenseRepository>();
-builder.Services.AddScoped<IExpenseProofRepository, ExpenseProofRepository>();
-builder.Services.AddScoped<ExpenseService>();
-builder.Services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
-builder.Services.AddScoped<ExpenseCategoryService>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
-builder.Services.AddScoped<ManagerService>();
-builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
-builder.Services.AddScoped<NotificationService>();
-builder.Services.AddScoped<EmailService>();
- 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>() ?? new JwtSettings();
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret)),
-            ClockSkew = TimeSpan.FromMinutes(3)
-        };
- 
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-                {
-                    context.Response.Headers.Append("Token-Expired", "true");
-                }
-                return Task.CompletedTask;
-            },
-            OnChallenge = async context =>
-            {
-                context.HandleResponse();
-                context.Response.StatusCode = 401;
-                context.Response.ContentType = "application/json";
- 
-                var result = JsonSerializer.Serialize(new ApiResponse<object>
-                {
-                    Success = false,
-                    Code = StatusCodes.Status401Unauthorized,
-                    Error = "You are not authorized to access this resource. Please provide a valid token."
-                });
- 
-                await context.Response.WriteAsync(result);
-            },
-            OnForbidden = async context =>
-            {
-                context.Response.StatusCode = 403;
-                context.Response.ContentType = "application/json";
- 
-                var result = JsonSerializer.Serialize(new ApiResponse<object>
-                {
-                    Success = false,
-                    Code = StatusCodes.Status403Forbidden,
-                    Error = "You do not have permission to perform this action."
-                });
- 
-                await context.Response.WriteAsync(result);
-            }
-        };
-    });
- 
- 
-builder.Services.AddAuthorization();
- 
+
+builder.Services.AddAppCors();
+builder.Services.AddAppControllers();
+builder.Services.AddAppDbContext(builder.Configuration);
+builder.Services.AddAppServices(builder.Configuration);
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
 var app = builder.Build();
- 
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
- 
+
 app.UseMiddleware<GlobalExceptionHandler>();
-app.UseCors(MyAllowSpecificOrigins);
+app.UseCors(ServiceConfig.CorsPolicyName);
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
- 
+
 app.MapControllers();
- 
+
 app.Run();
- 

@@ -15,6 +15,11 @@ import { ProfilePage } from "../pages/ProfilePage";
 import { OrgChartPage } from "../pages/OrgChartPage";
 import { ExpenseConfigPage } from "../pages/travel/ExpenseConfigPage";
 import { TeamMembersPage } from "../pages/TeamMembersPage";
+import { GamesPage } from "../pages/games/GamesPage";
+import { GameAdminPage } from "../pages/games/GameAdminPage";
+import { GameBookingsPage } from "../pages/games/GameBookingsPage";
+import { GameRequestsPage } from "../pages/games/GameRequestsPage";
+
 
 export const router = createBrowserRouter([
   {
@@ -94,6 +99,46 @@ export const router = createBrowserRouter([
           element: (
             <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
               <OrgChartPage />
+            </RoleRoute>
+          )
+        },
+        {
+          path: 'games',
+          element: (
+            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
+              <GamesPage />
+            </RoleRoute>
+          )
+        },
+        {
+          path: 'games/bookings',
+          element: (
+            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
+              <GameBookingsPage />
+            </RoleRoute>
+          )
+        },
+        {
+          path: 'games/requests',
+          element: (
+            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
+              <GameRequestsPage />
+            </RoleRoute>
+          )
+        },
+        {
+          path: 'games/upcoming',
+          element: (
+            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
+              <GameBookingsPage />
+            </RoleRoute>
+          )
+        },
+        {
+          path: 'games/admin',
+          element: (
+            <RoleRoute allowedRoles={['Manager', 'HR']}>
+              <GameAdminPage />
             </RoleRoute>
           )
         },

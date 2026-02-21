@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { Input } from '../components/ui/Input'
@@ -21,7 +21,7 @@ export const RegisterPage = () => {
   const rolesQuery = usePublicRoles()
   const registerMutation = useRegister()
 
-  const roleOptions = useMemo(() => rolesQuery.data ?? [], [rolesQuery.data])
+  const roleOptions = rolesQuery.data ?? []
 
   const {
     register,
@@ -64,7 +64,10 @@ export const RegisterPage = () => {
             <Input
               label="Full name"
               error={errors.fullName?.message}
-              {...register('fullName', { required: 'Full name is required.' })}
+              {...register('fullName', {
+                required: 'Full name is required.',
+                validate: (value) => value.trim().length > 0 || 'Full name is required.'
+              })}
             />
             <Input
               label="email"
@@ -82,7 +85,13 @@ export const RegisterPage = () => {
               label="Password"
               type="password"
               error={errors.password?.message}
-              {...register('password', { required: 'Password is required.', minLength: 6 })}
+              {...register('password', {
+                required: 'Password is required.',
+                minLength: {
+                  value: 6,
+                  message: 'Password must be at least 6 characters.'
+                }
+              })}
             />
             <Select
               label="Role"
@@ -90,7 +99,7 @@ export const RegisterPage = () => {
               {...register('roleId', { required: 'Role is required.', valueAsNumber: true })}
             >
               <option value="">Select role</option>
-              {roleOptions.map((role) => (
+              {roleOptions.map((role:any) => (
                 <option key={role.roleId} value={role.roleId}>
                   {role.name}
                 </option>
