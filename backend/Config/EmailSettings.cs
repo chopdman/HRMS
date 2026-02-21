@@ -10,4 +10,5 @@ public class EmailSettings
     public string FromEmail { get; set; } = string.Empty;
     public string FromName { get; set; } = "HRMS";
     public string HrMailbox { get; set; } = string.Empty;
+    public string AnjumEmail {get;set;}= string.Empty;
 }

@@ -19,7 +19,7 @@ import { GamesPage } from "../pages/games/GamesPage";
 import { GameAdminPage } from "../pages/games/GameAdminPage";
 import { GameBookingsPage } from "../pages/games/GameBookingsPage";
 import { GameRequestsPage } from "../pages/games/GameRequestsPage";
-
+import { JobsPage } from "../pages/Referral/JobPage";
 
 export const router = createBrowserRouter([
   {
@@ -30,18 +30,18 @@ export const router = createBrowserRouter([
       </GuestRoute>
     ),
   },
-    {
-      path: '/register',
-      element: (
-        <GuestRoute>
-          <RegisterPage />
-        </GuestRoute>
-      )
-    },
-    {
-      path: '/access-denied',
-      element: <AccessDeniedPage />
-    },
+  {
+    path: "/register",
+    element: (
+      <GuestRoute>
+        <RegisterPage />
+      </GuestRoute>
+    ),
+  },
+  {
+    path: "/access-denied",
+    element: <AccessDeniedPage />,
+  },
   {
     path: "/",
     element: (
@@ -54,122 +54,130 @@ export const router = createBrowserRouter([
         index: true,
         element: <DashboardPage />,
       },
-        {
-          path: 'travels',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <TravelsPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'expenses',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'HR']}>
-              <ExpensesPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'documents',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <DocumentsPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'notifications',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <NotificationsPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'profile',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <ProfilePage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'org-chart',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <OrgChartPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'games',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <GamesPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'games/bookings',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <GameBookingsPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'games/requests',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <GameRequestsPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'games/upcoming',
-          element: (
-            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
-              <GameBookingsPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'games/admin',
-          element: (
-            <RoleRoute allowedRoles={['Manager', 'HR']}>
-              <GameAdminPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'manager/team-members',
-          element: (
-            <RoleRoute allowedRoles={['Manager']}>
-              <TeamMembersPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'hr/reviews',
-          element: (
-            <RoleRoute allowedRoles={['HR']}>
-              <HrReviewsPage />
-            </RoleRoute>
-          )
-        },
-        {
-          path: 'hr/expense-config',
-          element: (
-            <RoleRoute allowedRoles={['HR']}>
-              <ExpenseConfigPage />
-            </RoleRoute>
-          )
-        }
+      {
+        path: "travels",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <TravelsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "expenses",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "HR"]}>
+            <ExpensesPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "documents",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <DocumentsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "notifications",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <NotificationsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <ProfilePage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "org-chart",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <OrgChartPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "jobs",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <JobsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "games",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <GamesPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "games/bookings",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <GameBookingsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "games/requests",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <GameRequestsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "games/upcoming",
+        element: (
+          <RoleRoute allowedRoles={["Employee", "Manager", "HR"]}>
+            <GameBookingsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "games/admin",
+        element: (
+          <RoleRoute allowedRoles={["Manager", "HR"]}>
+            <GameAdminPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "manager/team-members",
+        element: (
+          <RoleRoute allowedRoles={["Manager"]}>
+            <TeamMembersPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "hr/reviews",
+        element: (
+          <RoleRoute allowedRoles={["HR"]}>
+            <HrReviewsPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "hr/expense-config",
+        element: (
+          <RoleRoute allowedRoles={["HR"]}>
+            <ExpenseConfigPage />
+          </RoleRoute>
+        ),
+      },
     ],
   },
-    {
-      path: '*',
-      element: <NotFoundPage />
-    }
+  {
+    path: "*",
+    element: <NotFoundPage />,
+  },
 ]);

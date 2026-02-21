@@ -6,10 +6,12 @@ using backend.Data;
 using backend.DTO.Common;
 using backend.Repositories.Common;
 using backend.Repositories.Games;
+using backend.Repositories.Referrals;
 using backend.Repositories.Travels;
 using backend.Services.Auth;
 using backend.Services.Common;
 using backend.Services.Games;
+using backend.Services.Referrals;
 using backend.Services.Travels;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -90,7 +92,7 @@ public static class ServiceConfig
 
         services.AddHttpClient();
 
-       services.AddScoped<PasswordHasher>();
+        services.AddScoped<PasswordHasher>();
         services.AddScoped<TokenService>();
         services.AddScoped<TravelService>();
         services.AddScoped<RoleService>();
@@ -120,11 +122,19 @@ public static class ServiceConfig
         services.AddScoped<GameSlotService>();
         services.AddScoped<GameRequestService>();
         services.AddScoped<GameBookingService>();
-        services.AddScoped< GameAllocationService>();
+        services.AddScoped<GameAllocationService>();
         services.AddHostedService<GameSlotBackgroundService>();
         services.AddScoped<IGameRepository, GameRepository>();
         services.AddScoped<GameService>();
-
+        services.AddScoped<IJobOpeningRepository, JobOpeningRepository>();
+        services.AddScoped<IJobShareRepository, JobShareRepository>();
+        services.AddScoped<IReferralRepository, ReferralRepository>();
+        services.AddScoped<IReferralStatusLogRepository, ReferralStatusLogRepository>();
+        services.AddScoped<IGlobalConfigRepository, GlobalConfigRepository>();
+        services.AddScoped<IEmailLogRepository, EmailLogRepository>();
+        services.AddScoped<JobOpeningService>();
+        services.AddScoped<JobShareService>();
+        services.AddScoped<ReferralService>();
         return services;
     }
 

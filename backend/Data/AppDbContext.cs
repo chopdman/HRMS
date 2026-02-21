@@ -32,6 +32,13 @@ namespace backend.Data
         public DbSet<GameBookingParticipant> GameBookingParticipants => Set<GameBookingParticipant>();
         public DbSet<GameHistory> GameHistories => Set<GameHistory>();
         public DbSet<UserGameInterest> UserGameInterests => Set<UserGameInterest>();
+         
+          public DbSet<JobOpening> JobOpenings => Set<JobOpening>();
+        public DbSet<JobShare> JobShares => Set<JobShare>();
+        public DbSet<Referral> Referrals => Set<Referral>();
+        public DbSet<ReferralStatusLog> ReferralStatusLogs => Set<ReferralStatusLog>();
+        public DbSet<GlobalConfig> GlobalConfigs => Set<GlobalConfig>();
+        public DbSet<EmailLog> EmailLogs => Set<EmailLog>();
 
 
 
