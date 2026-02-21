@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using backend.Entities.Achievements;
+using Microsoft.AspNetCore.Http;
 
 namespace backend.DTO.Achievements;
 
@@ -15,7 +16,9 @@ public record AchievementCommentDto(
     AchievementUserDto Author,
     string CommentText,
     DateTime CreatedAt,
-    DateTime UpdatedAt
+    DateTime UpdatedAt,
+    long? ParentCommentId = null,
+    IReadOnlyCollection<AchievementCommentDto>? Replies = null
 );
 
 public record AchievementPostDto(
@@ -33,7 +36,9 @@ public record AchievementPostDto(
     bool HasLiked,
     IReadOnlyCollection<AchievementUserDto> RecentLikers,
     int CommentCount,
-    IReadOnlyCollection<AchievementCommentDto> Comments
+    IReadOnlyCollection<AchievementCommentDto> Comments,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null
 );
 
 public record AchievementPostCreateDto(
@@ -51,7 +56,8 @@ public record AchievementPostUpdateDto(
 );
 
 public record AchievementCommentCreateDto(
-    [Required, MaxLength(2000)] string CommentText
+    [Required, MaxLength(2000)] string CommentText,
+    long? ParentCommentId = null
 );
 
 public record AchievementCommentUpdateDto(

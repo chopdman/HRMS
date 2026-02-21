@@ -44,7 +44,7 @@ namespace backend.Entities.Achievements
         [ForeignKey("ParentCommentId")]
         public virtual PostComment? ParentComment { get; set; }
 
-       
+        public ICollection<PostComment> Replies { get; set; } = new List<PostComment>();
     }
 
 }

@@ -31,6 +31,20 @@ namespace backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PostId"));
 
+                    b.Property<string>("AttachmentFileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("attachment_filename");
+
+                    b.Property<string>("AttachmentPublicId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("attachment_public_id");
+
+                    b.Property<string>("AttachmentUrl")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("attachment_url");
+
                     b.Property<long>("AuthorId")
                         .HasColumnType("bigint")
                         .HasColumnName("fk_author_id");
@@ -1368,7 +1382,7 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Common.User", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Author");
@@ -1385,7 +1399,7 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Common.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Comment");
@@ -1398,12 +1412,13 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Common.User", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("backend.Entities.Achievements.PostComment", "ParentComment")
-                        .WithMany()
-                        .HasForeignKey("ParentCommentId");
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("backend.Entities.Achievements.AchievementPost", "Post")
                         .WithMany("Comments")
@@ -1429,7 +1444,7 @@ namespace backend.Migrations
                     b.HasOne("backend.Entities.Common.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Post");
@@ -1806,6 +1821,11 @@ namespace backend.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.PostComment", b =>
+                {
+                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("backend.Entities.Common.Role", b =>

@@ -21,6 +21,9 @@ public class AchievementsRepository : IAchievementsRepository
             .Include(p => p.Author)
             .Include(p => p.Comments)
                 .ThenInclude(c => c.Author)
+            .Include(p => p.Comments)
+                .ThenInclude(c => c.Replies)
+                    .ThenInclude(r => r.Author)
             .Include(p => p.Likes)
                 .ThenInclude(l => l.User)
             .Where(p => !p.IsDeleted);
@@ -69,6 +72,9 @@ public class AchievementsRepository : IAchievementsRepository
             .Include(p => p.Author)
             .Include(p => p.Comments)
                 .ThenInclude(c => c.Author)
+            .Include(p => p.Comments)
+                .ThenInclude(c => c.Replies)
+                    .ThenInclude(r => r.Author)
             .Include(p => p.Likes)
                 .ThenInclude(l => l.User)
             .FirstOrDefaultAsync(p => p.PostId == postId && !p.IsDeleted);
@@ -85,6 +91,8 @@ public class AchievementsRepository : IAchievementsRepository
         return await _db.PostComments
             .Include(c => c.Author)
             .Include(c => c.Post)
+            .Include(c => c.Replies)
+                .ThenInclude(r => r.Author)
             .FirstOrDefaultAsync(c => c.CommentId == commentId && !c.IsDeleted);
     }
 

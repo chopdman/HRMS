@@ -14,11 +14,13 @@ public class AchievementsController : ControllerBase
 {
     private readonly AchievementsService _service;
     private readonly AuthService _auth;
+    private readonly CloudinaryService _cloudinaryService;
 
-    public AchievementsController(AchievementsService service, AuthService auth)
+    public AchievementsController(AchievementsService service, AuthService auth, CloudinaryService cloudinaryService)
     {
         _service = service;
         _auth = auth;
+        _cloudinaryService = cloudinaryService;
     }
 
     [Authorize]
@@ -54,13 +56,8 @@ public class AchievementsController : ControllerBase
 
     [Authorize]
     [HttpPost("posts")]
-    public async Task<IActionResult> CreatePost([FromBody] AchievementPostCreateDto dto)
+    public async Task<IActionResult> CreatePost([FromForm] string title, [FromForm] string? description, [FromForm] string? tags, [FromForm] IFormFile? attachment)
     {
-        if (!ModelState.IsValid)
-        {
-            return ValidationProblem(ModelState);
-        }
-
         var currentUserId = _auth.GetUserId(User);
         if (currentUserId is null)
         {
@@ -74,7 +71,24 @@ public class AchievementsController : ControllerBase
 
         try
         {
-            var result = await _service.CreatePostAsync(currentUserId.Value, dto);
+            CloudinaryUploadResult? uploadResult = null;
+            if (attachment != null && attachment.Length > 0)
+            {
+                uploadResult = await _cloudinaryService.UploadAsync(attachment, "achievements");
+            }
+
+            var tags_parsed = string.IsNullOrWhiteSpace(tags) 
+                ? new List<string>() 
+                : tags.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+
+            var dto = new AchievementPostCreateDto(
+                title,
+                description,
+                tags_parsed,
+                null
+            );
+
+            var result = await _service.CreatePostAsync(currentUserId.Value, dto, uploadResult);
             return Ok(new ApiResponse<object>
             {
                 Success = true,

@@ -39,6 +39,16 @@ namespace backend.Entities.Achievements
         [Column("system_key")]
         public string? SystemKey { get; set; }
 
+        [Column("attachment_url")]
+        public string? AttachmentUrl { get; set; }
+
+        [MaxLength(255)]
+        [Column("attachment_filename")]
+        public string? AttachmentFileName { get; set; }
+
+        [MaxLength(100)]
+        [Column("attachment_public_id")]
+        public string? AttachmentPublicId { get; set; }
 
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;

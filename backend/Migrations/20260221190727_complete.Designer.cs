@@ -12,8 +12,8 @@ using backend.Data;
 namespace backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260216094330_initial")]
-    partial class initial
+    [Migration("20260221190727_complete")]
+    partial class complete
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,306 @@ namespace backend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("backend.Entities.Achievements.AchievementPost", b =>
+                {
+                    b.Property<long>("PostId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_post_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PostId"));
+
+                    b.Property<long>("AuthorId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_author_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsSystemGenerated")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_system_generated");
+
+                    b.Property<int>("PostType")
+                        .HasColumnType("int")
+                        .HasColumnName("post_type");
+
+                    b.Property<string>("SystemKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("system_key");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("tags");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("Visibility")
+                        .HasColumnType("int")
+                        .HasColumnName("post_visibility");
+
+                    b.HasKey("PostId");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("achievement_posts");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.CommentLike", b =>
+                {
+                    b.Property<long>("LikeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_like_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("LikeId"));
+
+                    b.Property<long>("CommentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_comment_id");
+
+                    b.Property<DateTime>("LikedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("liked_at");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_user_id");
+
+                    b.HasKey("LikeId");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("comment_likes");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.PostComment", b =>
+                {
+                    b.Property<long>("CommentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_comment_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CommentId"));
+
+                    b.Property<long>("AuthorId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_author_id");
+
+                    b.Property<string>("CommentText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("comment_text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<long?>("ParentCommentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_parent_comment_id");
+
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_post_id");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("CommentId");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("ParentCommentId");
+
+                    b.HasIndex("PostId");
+
+                    b.ToTable("post_comments");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.PostLike", b =>
+                {
+                    b.Property<long>("LikeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_like_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("LikeId"));
+
+                    b.Property<DateTime>("LikedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("liked_at");
+
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_post_id");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_user_id");
+
+                    b.HasKey("LikeId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("post_likes");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.RemovedContent", b =>
+                {
+                    b.Property<long>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_log_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("LogId"));
+
+                    b.Property<long>("AuthorId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_author_id");
+
+                    b.Property<long>("ContentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_content_id");
+
+                    b.Property<int>("ContentType")
+                        .HasColumnType("int")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTime>("DeletedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<long>("DeletedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_deleted_by");
+
+                    b.Property<string>("Reason")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("reason");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("DeletedBy");
+
+                    b.ToTable("removed_contents");
+                });
+
+            modelBuilder.Entity("backend.Entities.Common.EmailLog", b =>
+                {
+                    b.Property<long>("EmailLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_email_log_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("EmailLogId"));
+
+                    b.Property<string>("EmailType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("email_type");
+
+                    b.Property<long?>("JobId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_job_id");
+
+                    b.Property<string>("RecipientEmail")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("recipient_email");
+
+                    b.Property<long?>("ReferralId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_referral_id");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("subject");
+
+                    b.HasKey("EmailLogId");
+
+                    b.ToTable("email_logs");
+                });
+
+            modelBuilder.Entity("backend.Entities.Common.GlobalConfig", b =>
+                {
+                    b.Property<long>("ConfigId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_config_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ConfigId"));
+
+                    b.Property<string>("ConfigField")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("config_field");
+
+                    b.Property<string>("ConfigValue")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnName("config_value");
+
+                    b.Property<string>("RelatedTable")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("related_table");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.Property<long?>("UpdatedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("ConfigId");
+
+                    b.HasIndex("ConfigField")
+                        .IsUnique();
+
+                    b.ToTable("global_config");
+                });
 
             modelBuilder.Entity("backend.Entities.Common.Notification", b =>
                 {
@@ -549,6 +849,232 @@ namespace backend.Migrations
                     b.ToTable("user_game_interests");
                 });
 
+            modelBuilder.Entity("backend.Entities.Referrals.JobOpening", b =>
+                {
+                    b.Property<long>("JobId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_job_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("JobId"));
+
+                    b.Property<string>("CvReviewerEmails")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("cv_reviewer_emails");
+
+                    b.Property<string>("Department")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("department");
+
+                    b.Property<string>("ExperienceRequired")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("experience_required");
+
+                    b.Property<string>("HrOwnerEmail")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("hr_owner_email");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_active");
+
+                    b.Property<string>("JobDescriptionPath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("job_description_path");
+
+                    b.Property<string>("JobSummary")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("job_summary");
+
+                    b.Property<string>("JobTitle")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("job_title");
+
+                    b.Property<int>("JobType")
+                        .HasColumnType("int")
+                        .HasColumnName("job_type");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("location");
+
+                    b.Property<DateTime>("PostedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("posted_at");
+
+                    b.Property<long?>("PostedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_posted_by");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("JobId");
+
+                    b.HasIndex("PostedBy");
+
+                    b.ToTable("job_openings");
+                });
+
+            modelBuilder.Entity("backend.Entities.Referrals.JobShare", b =>
+                {
+                    b.Property<long>("ShareId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_share_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ShareId"));
+
+                    b.Property<long>("JobId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_job_id");
+
+                    b.Property<string>("RecipientEmail")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("recipient_email");
+
+                    b.Property<DateTime>("SharedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("shared_at");
+
+                    b.Property<long>("SharedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_shared_by");
+
+                    b.HasKey("ShareId");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("SharedBy");
+
+                    b.ToTable("job_shares");
+                });
+
+            modelBuilder.Entity("backend.Entities.Referrals.Referral", b =>
+                {
+                    b.Property<long>("ReferralId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_referral_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ReferralId"));
+
+                    b.Property<string>("CvFilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("cv_file_path");
+
+                    b.Property<string>("FriendEmail")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("friend_email");
+
+                    b.Property<string>("FriendName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("friend_name");
+
+                    b.Property<string>("HrRecipients")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("hr_recipients");
+
+                    b.Property<long>("JobId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_job_id");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("note");
+
+                    b.Property<long>("ReferredBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_referred_by");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("StatusUpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("status_updated_at");
+
+                    b.Property<long?>("StatusUpdatedBy")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_status_updated_by");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("submitted_at");
+
+                    b.HasKey("ReferralId");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("ReferredBy");
+
+                    b.HasIndex("StatusUpdatedBy");
+
+                    b.ToTable("referrals");
+                });
+
+            modelBuilder.Entity("backend.Entities.Referrals.ReferralStatusLog", b =>
+                {
+                    b.Property<long>("ReferralStatusLogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("pk_referral_status_log_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ReferralStatusLogId"));
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("changed_at");
+
+                    b.Property<long?>("ChangedById")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_changed_by");
+
+                    b.Property<int>("NewStatus")
+                        .HasColumnType("int")
+                        .HasColumnName("new_status");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("note");
+
+                    b.Property<int?>("OldStatus")
+                        .HasColumnType("int")
+                        .HasColumnName("old_status");
+
+                    b.Property<string>("RecipientsSnapshot")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("recipients_snapshot");
+
+                    b.Property<long>("ReferralId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("fk_referral_id");
+
+                    b.HasKey("ReferralStatusLogId");
+
+                    b.HasIndex("ChangedById");
+
+                    b.HasIndex("ReferralId");
+
+                    b.ToTable("referral_status_logs");
+                });
+
             modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
                 {
                     b.Property<long>("ExpenseId")
@@ -840,6 +1366,100 @@ namespace backend.Migrations
                     b.ToTable("travel_documents");
                 });
 
+            modelBuilder.Entity("backend.Entities.Achievements.AchievementPost", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.CommentLike", b =>
+                {
+                    b.HasOne("backend.Entities.Achievements.PostComment", "Comment")
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.PostComment", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Achievements.PostComment", "ParentComment")
+                        .WithMany()
+                        .HasForeignKey("ParentCommentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("backend.Entities.Achievements.AchievementPost", "Post")
+                        .WithMany("Comments")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("ParentComment");
+
+                    b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.PostLike", b =>
+                {
+                    b.HasOne("backend.Entities.Achievements.AchievementPost", "Post")
+                        .WithMany("Likes")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.RemovedContent", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "OriginalAuthor")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "Moderator")
+                        .WithMany()
+                        .HasForeignKey("DeletedBy")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Moderator");
+
+                    b.Navigation("OriginalAuthor");
+                });
+
             modelBuilder.Entity("backend.Entities.Common.Notification", b =>
                 {
                     b.HasOne("backend.Entities.Common.User", null)
@@ -1011,6 +1631,79 @@ namespace backend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("backend.Entities.Referrals.JobOpening", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "Poster")
+                        .WithMany()
+                        .HasForeignKey("PostedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Poster");
+                });
+
+            modelBuilder.Entity("backend.Entities.Referrals.JobShare", b =>
+                {
+                    b.HasOne("backend.Entities.Referrals.JobOpening", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "Sharer")
+                        .WithMany()
+                        .HasForeignKey("SharedBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Job");
+
+                    b.Navigation("Sharer");
+                });
+
+            modelBuilder.Entity("backend.Entities.Referrals.Referral", b =>
+                {
+                    b.HasOne("backend.Entities.Referrals.JobOpening", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "Referrer")
+                        .WithMany()
+                        .HasForeignKey("ReferredBy")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("backend.Entities.Common.User", "StatusUpdater")
+                        .WithMany()
+                        .HasForeignKey("StatusUpdatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Job");
+
+                    b.Navigation("Referrer");
+
+                    b.Navigation("StatusUpdater");
+                });
+
+            modelBuilder.Entity("backend.Entities.Referrals.ReferralStatusLog", b =>
+                {
+                    b.HasOne("backend.Entities.Common.User", "ChangedBy")
+                        .WithMany()
+                        .HasForeignKey("ChangedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("backend.Entities.Referrals.Referral", "Referral")
+                        .WithMany()
+                        .HasForeignKey("ReferralId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChangedBy");
+
+                    b.Navigation("Referral");
+                });
+
             modelBuilder.Entity("backend.Entities.Travels.Expense", b =>
                 {
                     b.HasOne("backend.Entities.Travels.ExpenseCategory", "Category")
@@ -1110,6 +1803,13 @@ namespace backend.Migrations
                     b.Navigation("Travel");
 
                     b.Navigation("Uploader");
+                });
+
+            modelBuilder.Entity("backend.Entities.Achievements.AchievementPost", b =>
+                {
+                    b.Navigation("Comments");
+
+                    b.Navigation("Likes");
                 });
 
             modelBuilder.Entity("backend.Entities.Common.Role", b =>

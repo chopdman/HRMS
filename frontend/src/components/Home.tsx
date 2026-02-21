@@ -76,6 +76,9 @@ export const Home = () => {
       >
         Games
       </NavLink>
+       <NavLink to="/achievements" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : ''}`}>
+          Achievements
+        </NavLink>
       {isManager ? (
         <div className="mt-3 border-t border-slate-200 pt-3">
           <p className="px-3 text-xs font-semibold uppercase tracking-wide text-slate-600">

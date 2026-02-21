@@ -1,4 +1,5 @@
 using backend.DTO.Achievements;
+using backend.DTO.Common;
 using backend.Entities.Achievements;
 using backend.Repositories.Achievements;
 using backend.Repositories.Common;
@@ -26,7 +27,7 @@ public class AchievementsService
         return posts.Select(post => MapPost(post, currentUserId)).ToList();
     }
 
-    public async Task<AchievementPostDto> CreatePostAsync(long authorId, AchievementPostCreateDto dto)
+    public async Task<AchievementPostDto> CreatePostAsync(long authorId, AchievementPostCreateDto dto, CloudinaryUploadResult? uploadResult = null)
     {
         if (string.IsNullOrWhiteSpace(dto.Title))
         {
@@ -42,6 +43,9 @@ public class AchievementsService
             Visibility = dto.Visibility ?? PostVisibility.AllEmployees,
             PostType = PostType.Achievement,
             IsSystemGenerated = false,
+            AttachmentUrl = uploadResult?.Url,
+            AttachmentFileName = uploadResult?.FileName,
+            AttachmentPublicId = uploadResult?.PublicId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -126,11 +130,22 @@ public class AchievementsService
             throw new ArgumentException("Post not found.");
         }
 
+        // If replying to a comment, validate the parent comment exists
+        if (dto.ParentCommentId.HasValue)
+        {
+            var parentComment = await _repo.GetCommentByIdAsync(dto.ParentCommentId.Value);
+            if (parentComment is null || parentComment.IsDeleted)
+            {
+                throw new ArgumentException("Parent comment not found.");
+            }
+        }
+
         var comment = new PostComment
         {
             PostId = postId,
             AuthorId = authorId,
             CommentText = dto.CommentText.Trim(),
+            ParentCommentId = dto.ParentCommentId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
@@ -360,7 +375,9 @@ public class AchievementsService
             likes.Any(l => l.UserId == currentUserId),
             recentLikers,
             comments.Count,
-            comments
+            comments,
+            post.AttachmentUrl,
+            post.AttachmentFileName
         );
     }
 
@@ -370,13 +387,21 @@ public class AchievementsService
             ? new AchievementUserDto(0, "Unknown", null)
             : new AchievementUserDto(comment.Author.UserId, comment.Author.FullName, comment.Author.ProfilePhotoUrl);
 
+        var replies = (comment.Replies ?? new List<PostComment>())
+            .Where(r => !r.IsDeleted)
+            .OrderBy(r => r.CreatedAt)
+            .Select(MapComment)
+            .ToList();
+
         return new AchievementCommentDto(
             comment.CommentId,
             comment.PostId,
             author,
             comment.CommentText ?? string.Empty,
             comment.CreatedAt,
-            comment.UpdatedAt
+            comment.UpdatedAt,
+            comment.ParentCommentId,
+            replies
         );
     }
 
