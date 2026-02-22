@@ -26,9 +26,29 @@ namespace backend.Entities.Achievements
         [Column("tags")]
         public string? Tags { get; set; }
 
+        [Column("post_visibility")]
+        public PostVisibility Visibility { get; set; } = PostVisibility.AllEmployees;
+
         [Column("post_type")]
         public PostType PostType { get; set; } = PostType.Achievement;
 
+        [Column("is_system_generated")]
+        public bool IsSystemGenerated { get; set; } = false;
+
+        [MaxLength(200)]
+        [Column("system_key")]
+        public string? SystemKey { get; set; }
+
+        [Column("attachment_url")]
+        public string? AttachmentUrl { get; set; }
+
+        [MaxLength(255)]
+        [Column("attachment_filename")]
+        public string? AttachmentFileName { get; set; }
+
+        [MaxLength(100)]
+        [Column("attachment_public_id")]
+        public string? AttachmentPublicId { get; set; }
 
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;
@@ -42,6 +62,10 @@ namespace backend.Entities.Achievements
         [ForeignKey("AuthorId")]
         public virtual User? Author { get; set; }
 
+        public ICollection<PostComment> Comments { get; set; } = new List<PostComment>();
+
+        public ICollection<PostLike> Likes { get; set; } = new List<PostLike>();
+
     }
 
     public enum PostType
@@ -49,6 +73,11 @@ namespace backend.Entities.Achievements
         Achievement,
         Birthday,
         WorkAnniversary
+    }
+
+    public enum PostVisibility
+    {
+        AllEmployees
     }
 
 }

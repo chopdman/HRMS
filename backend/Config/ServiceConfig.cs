@@ -4,10 +4,12 @@ using System.Text.Json.Serialization;
 using backend.Config;
 using backend.Data;
 using backend.DTO.Common;
+using backend.Repositories.Achievements;
 using backend.Repositories.Common;
 using backend.Repositories.Games;
 using backend.Repositories.Referrals;
 using backend.Repositories.Travels;
+using backend.Services.Achievements;
 using backend.Services.Auth;
 using backend.Services.Common;
 using backend.Services.Games;
@@ -135,6 +137,9 @@ public static class ServiceConfig
         services.AddScoped<JobOpeningService>();
         services.AddScoped<JobShareService>();
         services.AddScoped<ReferralService>();
+         services.AddScoped<IAchievementsRepository, AchievementsRepository>();
+        services.AddScoped<AchievementsService>();
+        services.AddHostedService<AchievementsCelebrationService>();
         return services;
     }
 

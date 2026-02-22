@@ -19,7 +19,8 @@ import { GamesPage } from "../pages/games/GamesPage";
 import { GameAdminPage } from "../pages/games/GameAdminPage";
 import { GameBookingsPage } from "../pages/games/GameBookingsPage";
 import { GameRequestsPage } from "../pages/games/GameRequestsPage";
-import { JobsPage } from "../pages/Referral/JobPage";
+import { JobsPage } from "../pages/referral/JobPage";
+import { AchievementsPage } from "../pages/achievements/AchievementsPage";
 
 export const router = createBrowserRouter([
   {
@@ -150,6 +151,14 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+      {
+          path: 'achievements',
+          element: (
+            <RoleRoute allowedRoles={['Employee', 'Manager', 'HR']}>
+              <AchievementsPage />
+            </RoleRoute>
+          )
+        },
       {
         path: "manager/team-members",
         element: (
